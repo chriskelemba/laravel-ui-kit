@@ -1,0 +1,34 @@
+{
+    "name": "chriskelemba/laravel-ui-kit",
+    "version": "0.1.0",
+    "description": "Blade-based UI components for Laravel",
+    "type": "library",
+    "keywords": ["laravel", "blade", "ui", "components", "kit"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Christian Kelemba",
+            "email": "chriskelemba@gmail.com",
+            "homepage": "https://github.com/chriskelemba"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^12.0",
+        "illuminate/view": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ChrisKelemba\\LaravelUiKit\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ChrisKelemba\\LaravelUiKit\\Providers\\LaravelUiKitServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
