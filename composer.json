@@ -1,6 +1,5 @@
 {
     "name": "chriskelemba/laravel-ui-kit",
-    "version": "0.1.0",
     "description": "Blade-based UI components for Laravel",
     "type": "library",
     "keywords": ["laravel", "blade", "ui", "components", "kit"],
