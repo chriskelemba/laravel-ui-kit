@@ -7,15 +7,29 @@
     'sidebarCollapsible' => true,
     'sidebarCollapsed' => false,
     'sidebarCollapseMode' => 'compact', // compact | hidden
+    'sidebarWidth' => '15rem',
     'activePrimarySection' => null,
     'rightSidebarCollapsible' => true,
     'rightSidebarCollapsed' => false,
     'rightSidebarCollapseMode' => 'compact', // compact | hidden
     'rightSidebarVisible' => true,
+    'rightSidebarWidth' => '24rem',
     'activeRightPrimarySection' => null,
     'showSidebarToggle' => true,
     'showSidebarToggleDesktop' => false,
 ])
+
+@php
+    $hasRightSidebar = isset($rightSidebar);
+    $hasRightPrimaryRail = isset($rightPrimaryRail);
+    $rightRailWidth = '5rem';
+    $rightExpandedWidth = $hasRightSidebar && $hasRightPrimaryRail ? null : ($hasRightSidebar ? null : 'w-[5rem]');
+    $rightCompactWidth = $hasRightSidebar && $hasRightPrimaryRail ? null : ($hasRightSidebar ? 'w-0' : 'w-[5rem]');
+    $rightHiddenWidth = $hasRightPrimaryRail ? null : 'w-0';
+    $rightExpandedWidthStyle = $hasRightSidebar && $hasRightPrimaryRail ? 'calc(' . $rightSidebarWidth . ' + ' . $rightRailWidth . ')' : null;
+    $rightCompactWidthStyle = $hasRightSidebar && $hasRightPrimaryRail ? $rightRailWidth : ($hasRightSidebar ? '0px' : null);
+    $rightHiddenWidthStyle = $hasRightPrimaryRail ? $rightRailWidth : '0px';
+@endphp
 
 <div
     x-cloak
@@ -40,9 +54,19 @@
         hoverRightPrimarySection: null,
         rightSidebarPointerX: null,
         rightSidebarPointerY: null,
-        theme: localStorage.getItem('aui-theme') || 'light',
+        theme: 'light',
     }"
     x-init="
+        const storedSidebarOpen = localStorage.getItem('aui-sidebar-open');
+        if (!sidebarStatic && storedSidebarOpen !== null) {
+            sidebarOpen = JSON.parse(storedSidebarOpen);
+        }
+
+        const storedRightSidebarVisible = localStorage.getItem('aui-right-sidebar-visible');
+        if (storedRightSidebarVisible !== null) {
+            rightSidebarVisible = JSON.parse(storedRightSidebarVisible);
+        }
+
         sidebarCollapsed = sidebarCollapsible
             ? JSON.parse(localStorage.getItem('aui-sidebar-collapsed') ?? @js($sidebarCollapsed ? 'true' : 'false'))
             : false;
@@ -51,20 +75,37 @@
             ? JSON.parse(localStorage.getItem('aui-right-sidebar-collapsed') ?? @js($rightSidebarCollapsed ? 'true' : 'false'))
             : false;
 
-        $watch('theme', value => {
-            localStorage.setItem('aui-theme', value);
-            document.documentElement.setAttribute('data-aui-theme', value);
-        });
-
         $watch('sidebarCollapsed', value => {
             if (sidebarCollapsible) {
                 localStorage.setItem('aui-sidebar-collapsed', JSON.stringify(value));
+            }
+            if (sidebarCollapseMode === 'hidden' && value) {
+                sidebarHoverExpanded = false;
+                if (!sidebarStatic) {
+                    sidebarOpen = false;
+                }
+            }
+        });
+
+        $watch('sidebarOpen', value => {
+            if (!sidebarStatic) {
+                localStorage.setItem('aui-sidebar-open', JSON.stringify(value));
             }
         });
 
         $watch('rightSidebarCollapsed', value => {
             if (rightSidebarCollapsible) {
                 localStorage.setItem('aui-right-sidebar-collapsed', JSON.stringify(value));
+            }
+            if (rightSidebarCollapseMode === 'hidden' && value) {
+                rightSidebarHoverExpanded = false;
+            }
+        });
+
+        $watch('rightSidebarVisible', value => {
+            localStorage.setItem('aui-right-sidebar-visible', JSON.stringify(value));
+            if (value && rightSidebarCollapsible && rightSidebarCollapseMode === 'hidden') {
+                rightSidebarCollapsed = false;
             }
         });
 
@@ -173,10 +214,14 @@
                                     </svg>
                                 </button>
                             @endif
-                            @if ($showSidebarToggleDesktop)
+                            @if ($showSidebarToggleDesktop || $showSidebarToggle)
                                 <button
                                     type="button"
-                                    @click="if (sidebarCollapsible) sidebarCollapsed = !sidebarCollapsed"
+                                    @click="
+                                        const nextCollapsed = !sidebarCollapsed;
+                                        if (sidebarCollapsible) sidebarCollapsed = nextCollapsed;
+                                        if (!sidebarStatic) sidebarOpen = !nextCollapsed;
+                                    "
                                     x-show="sidebarCollapsible"
                                     class="hidden lg:inline-flex lg:h-10 lg:w-10 lg:items-center lg:justify-center lg:rounded-full lg:border lg:transition"
                                     :class="theme === 'dark'
@@ -212,21 +257,6 @@
                             @isset($actions)
                                 {{ $actions }}
                             @endisset
-                            <button
-                                type="button"
-                                @click="theme = theme === 'dark' ? 'light' : 'dark'"
-                                :class="theme === 'dark'
-                                    ? 'inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 transition hover:bg-white/10'
-                                    : 'inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-700 shadow-sm transition hover:bg-slate-50'"
-                                aria-label="Toggle theme"
-                            >
-                                <svg x-show="theme === 'dark'" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 108.94 7.5A7 7 0 0112 3z"/>
-                                </svg>
-                                <svg x-show="theme !== 'dark'" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364-1.414 1.414M7.05 16.95l-1.414 1.414m12.728 0-1.414-1.414M7.05 7.05 5.636 5.636M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-                                </svg>
-                            </button>
                         </div>
                     </div>
                 @endisset
@@ -256,13 +286,16 @@
                         x-ref="sidebar"
                         class="aui-sidebar fixed bottom-0 left-0 z-30 overflow-hidden border-r backdrop-blur-xl transition-[width,transform,opacity] duration-200 lg:sticky"
                         style="top: var(--aui-header-height); height: calc(100vh - var(--aui-header-height));"
-                        :class="(sidebarOpen || sidebarStatic)
-                            ? 'w-60 translate-x-0 opacity-100 pointer-events-auto '
+                        :style="((sidebarOpen || sidebarStatic || (sidebarCollapsed && sidebarHoverExpanded)) && !(sidebarCollapsed && !sidebarHoverExpanded && sidebarCollapseMode === 'hidden'))
+                            ? 'width: {{ $sidebarWidth }};'
+                            : ''"
+                        :class="(sidebarOpen || sidebarStatic || (sidebarCollapsed && sidebarHoverExpanded))
+                            ? 'translate-x-0 opacity-100 pointer-events-auto '
                                 + ((sidebarCollapsed && !sidebarHoverExpanded)
                                     ? (sidebarCollapseMode === 'hidden'
                                         ? 'lg:w-0 lg:opacity-100 lg:pointer-events-none lg:border-transparent '
                                         : 'lg:w-16 ')
-                                    : 'lg:w-60 ')
+                                    : '')
                                 + (theme === 'dark' ? 'border-white/5 bg-slate-900/95' : 'border-slate-200/80 bg-white/95')
                             : 'w-60 -translate-x-full opacity-0 pointer-events-none lg:w-0 lg:translate-x-0 lg:opacity-0 lg:pointer-events-none lg:border-transparent '
                                 + (theme === 'dark' ? 'border-white/5 bg-slate-900/95' : 'border-slate-200/80 bg-white/95')"
@@ -285,23 +318,36 @@
                     <div
                         x-ref="rightSidebarRegion"
                         class="hidden shrink-0 overflow-hidden transition-[width,opacity] duration-200 lg:flex"
-                        :class="!rightSidebarVisible
-                            ? 'w-0 opacity-0 pointer-events-none'
-                            : ((rightSidebarCollapsed
+                        @mouseleave="rightSidebarHoverExpanded = false; hoverRightPrimarySection = null"
+                        :style="!rightSidebarVisible
+                            ? 'width: 0px;'
+                            : (((rightSidebarCollapsed && !rightSidebarHoverExpanded)
                                 ? (rightSidebarCollapseMode === 'hidden'
-                                    ? 'w-[5rem] opacity-100'
-                                    : 'w-[9rem] opacity-100')
-                                : 'w-[20rem] opacity-100'))"
+                                    ? 'width: {{ $rightHiddenWidthStyle }};'
+                                    : 'width: {{ $rightCompactWidthStyle ?? '4rem' }};')
+                                : (({{ $hasRightSidebar ? 'true' : 'false' }} && !{{ $hasRightPrimaryRail ? 'true' : 'false' }})
+                                    ? 'width: {{ $rightSidebarWidth }};'
+                                    : 'width: {{ $rightExpandedWidthStyle ?? $rightRailWidth }};')))"
+                        :class="!rightSidebarVisible
+                            ? 'opacity-0 pointer-events-none'
+                            : (((rightSidebarCollapsed && !rightSidebarHoverExpanded)
+                                ? (rightSidebarCollapseMode === 'hidden'
+                                    ? '{{ $rightHiddenWidth ?? '' }} opacity-100'
+                                    : '{{ $rightCompactWidth ?? '' }} opacity-100')
+                                : '{{ $rightExpandedWidth ?? '' }} opacity-100'))"
                     >
                         @isset($rightSidebar)
                             <aside
                                 x-ref="rightSidebar"
                                 class="aui-sidebar overflow-hidden border-l backdrop-blur-xl transition-[width,opacity] duration-200"
-                                :class="((rightSidebarCollapsed)
+                                :style="((!rightSidebarCollapsed || rightSidebarHoverExpanded) && {{ $hasRightSidebar ? 'true' : 'false' }})
+                                    ? 'width: {{ $rightSidebarWidth }};'
+                                    : ''"
+                                :class="(((rightSidebarCollapsed && !rightSidebarHoverExpanded))
                                     ? (rightSidebarCollapseMode === 'hidden'
                                         ? 'w-0 opacity-100 pointer-events-none border-transparent '
-                                        : 'w-16 ')
-                                    : 'w-60 ')
+                                        : '{{ $hasRightPrimaryRail ? 'w-0 opacity-100 pointer-events-none border-transparent ' : 'w-0 opacity-100 pointer-events-none border-transparent ' }}')
+                                    : '')
                                     + (theme === 'dark' ? 'border-white/5 bg-slate-900/95' : 'border-slate-200/80 bg-white/95')"
                             >
                                 <div class="flex h-full flex-col">
@@ -344,21 +390,6 @@
                             @isset($actions)
                                 {{ $actions }}
                             @endisset
-                            <button
-                                type="button"
-                                @click="theme = theme === 'dark' ? 'light' : 'dark'"
-                                :class="theme === 'dark'
-                                    ? 'inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 transition hover:bg-white/10'
-                                    : 'inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-700 shadow-sm transition hover:bg-slate-50'"
-                                aria-label="Toggle theme"
-                            >
-                                <svg x-show="theme === 'dark'" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 108.94 7.5A7 7 0 0112 3z"/>
-                                </svg>
-                                <svg x-show="theme !== 'dark'" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364-1.414 1.414M7.05 16.95l-1.414 1.414m12.728 0-1.414-1.414M7.05 7.05 5.636 5.636M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-                                </svg>
-                            </button>
                         </div>
                     </div>
                 @endisset

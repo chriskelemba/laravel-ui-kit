@@ -30,29 +30,15 @@
         @endif
 
         <script>
-            (function () {
-                try {
-                    var theme = localStorage.getItem('aui-theme') || 'light';
-                    document.documentElement.setAttribute('data-aui-theme', theme);
-                } catch (e) {
-                    // Ignore read/write errors (e.g. private mode)
-                }
-            })();
+            document.documentElement.setAttribute('data-aui-theme', 'light');
         </script>
         @include('ui-kit::partials.theme-styles')
         <style>
             :root { --aui-header-height: 4.75rem; }
-            html[data-aui-theme="dark"] body { background-color: #0f172a; color: #e2e8f0; }
             html[data-aui-theme="light"] body { background-color: #f6f8fc; color: #1f2937; }
-            html[data-aui-theme="dark"] .aui-sidebar { background-color: rgba(15, 23, 42, 0.95); border-color: rgba(255, 255, 255, 0.05); }
             html[data-aui-theme="light"] .aui-sidebar { background-color: rgba(255, 255, 255, 0.92); border-color: rgba(226, 232, 240, 0.9); }
-            html[data-aui-theme="dark"] .aui-overlay { background-color: rgba(0, 0, 0, 0.7); }
             html[data-aui-theme="light"] .aui-overlay { background-color: rgba(15, 23, 42, 0.4); }
-            html[data-aui-theme="dark"] .aui-sidebar-title { color: #64748b; }
             html[data-aui-theme="light"] .aui-sidebar-title { color: #6b7280; }
-            html[data-aui-theme="dark"] .aui-sidebar-link { color: #94a3b8; }
-            html[data-aui-theme="dark"] .aui-sidebar-link:hover { background-color: rgba(255, 255, 255, 0.05); color: #ffffff; }
-            html[data-aui-theme="dark"] .aui-sidebar-link.is-active { color: #ffffff; }
             html[data-aui-theme="light"] .aui-sidebar-link { color: #4b5563; }
             html[data-aui-theme="light"] .aui-sidebar-link:hover { background-color: #eef2ff; color: #111827; }
             html[data-aui-theme="light"] .aui-sidebar-link.is-active { color: #111827; }

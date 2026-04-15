@@ -415,21 +415,6 @@
                         <x-ui-kit::atoms.action-button variant="primary" :label="$primaryActionLabel" />
                     @endif
 
-                    <button
-                        type="button"
-                        @click="theme = theme === 'dark' ? 'light' : 'dark'"
-                        :class="theme === 'dark'
-                            ? 'inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 transition hover:bg-white/10'
-                            : 'inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-700 shadow-sm transition hover:bg-slate-50'"
-                        aria-label="Toggle theme"
-                    >
-                        <svg x-show="theme === 'dark'" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 108.94 7.5A7 7 0 0112 3z"/>
-                        </svg>
-                        <svg x-show="theme !== 'dark'" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.364-6.364-1.414 1.414M7.05 16.95l-1.414 1.414m12.728 0-1.414-1.414M7.05 7.05 5.636 5.636M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-                        </svg>
-                    </button>
                 </div>
             </div>
         </x-slot:header>

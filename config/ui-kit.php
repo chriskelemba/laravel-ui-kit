@@ -29,6 +29,14 @@ return [
             'overview' => 'fa-solid fa-house',
             'home' => 'fa-solid fa-house',
             'dashboard' => 'fa-solid fa-house',
+            'book_open' => 'fa-solid fa-book-open',
+            'squares_2x2' => 'fa-solid fa-table-cells-large',
+            'queue_list' => 'fa-solid fa-list-ul',
+            'identification' => 'fa-regular fa-id-card',
+            'bookmark_square' => 'fa-solid fa-bookmark',
+            'banknotes' => 'fa-solid fa-money-bill-wave',
+            'chart_bar' => 'fa-solid fa-chart-column',
+            'cog_6_tooth' => 'fa-solid fa-gear',
             'users' => 'fa-solid fa-users',
             'user' => 'fa-solid fa-user',
             'tasks' => 'fa-solid fa-list-check',
@@ -91,7 +99,7 @@ return [
         'content_width' => 'md', // xs | sm | md | lg | xl | 2xl | 3xl | 4xl | half | full | custom css value
         'card_position' => 'center', // left | center | right
         'content_alignment' => 'center', // start | center | end
-        'show_theme_toggle' => true,
+        'show_theme_toggle' => false,
         'panel_width' => '32rem',
         'background' => [
             'type' => 'solid', // solid | image

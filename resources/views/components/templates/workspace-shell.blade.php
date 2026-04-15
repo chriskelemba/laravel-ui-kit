@@ -22,9 +22,24 @@
     'themeColors' => [],
     'showRightSidebar' => true,
     'showRightPrimaryRail' => true,
+    'showHeaderSearch' => true,
+    'searchPlaceholder' => 'Search...',
+    'profileName' => null,
+    'profileEmail' => null,
+    'profileAvatarSrc' => null,
+    'profileEditHref' => '#',
+    'profileLogoutHref' => '#',
 ])
 
 @php
+    $profileName = $profileName ?? (auth()->user()->name ?? 'Library Admin');
+    $profileEmail = $profileEmail ?? (auth()->user()->email ?? 'admin@library.test');
+    $profileInitials = collect(explode(' ', $profileName))
+        ->filter()
+        ->map(fn ($part) => mb_substr($part, 0, 1))
+        ->take(2)
+        ->join('') ?: 'U';
+
     $currentSidebarSection = $sidebarSections[$activePrimarySection] ?? reset($sidebarSections) ?: [
         'compose' => null,
         'items' => [],
@@ -83,12 +98,6 @@
 @endphp
 
 @push('head')
-    @if ($forceRightSidebarOpen)
-        <script>
-            localStorage.setItem('aui-right-sidebar-visible', 'true');
-            localStorage.setItem('aui-right-sidebar-collapsed', 'false');
-        </script>
-    @endif
     <style>
         .workspace-shell {
             color: var(--ws-text);
@@ -214,7 +223,7 @@
     :right-sidebar-visible="$showRightSidebar"
     :right-sidebar-collapsible="$showRightSidebar"
     :right-sidebar-collapsed="$showRightSidebar ? false : true"
-    right-sidebar-collapse-mode="compact"
+    right-sidebar-collapse-mode="hidden"
     right-sidebar-width="20rem"
     :active-right-primary-section="$showRightPrimaryRail ? $rightSidebarView : null"
     x-init="
@@ -254,8 +263,8 @@
                 </button>
             </div>
 
-            <div class="flex items-center justify-between gap-4 px-6 py-4 lg:px-8">
-                <div class="flex min-w-0 items-center gap-4">
+            <div class="relative flex min-w-0 items-center justify-between gap-4 px-6 py-4 lg:px-8">
+                <div class="flex min-w-0 flex-1 items-center gap-6 overflow-visible">
                     @isset($brand)
                         {{ $brand }}
                     @elseif ($headerLogoSrc)
@@ -269,6 +278,79 @@
                     @elseif ($title)
                         <p class="text-2xl font-semibold tracking-tight text-slate-900">{{ $title }}</p>
                     @endif
+                </div>
+
+                @if ($showHeaderSearch)
+                    <label class="group hidden min-w-0 flex-[0_1_32rem] justify-center sm:flex">
+                        <span class="sr-only">Search</span>
+                        <span class="ws-card flex h-10 w-full max-w-lg items-center gap-3 rounded-full border px-4 shadow-sm transition group-focus-within:border-sky-300 group-focus-within:ring-2 group-focus-within:ring-sky-100">
+                            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"/>
+                            </svg>
+                            <input
+                                type="search"
+                                placeholder="{{ $searchPlaceholder }}"
+                                class="min-w-0 flex-1 border-0 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-0 focus:outline-none focus:ring-0 focus-visible:outline-none"
+                            >
+                        </span>
+                    </label>
+                @endif
+
+                <div class="flex shrink-0 items-center justify-end">
+                    <div class="relative shrink-0" x-data="{ profileOpen: false }" @keydown.escape.window="profileOpen = false">
+                        <button
+                            type="button"
+                            class="ws-card flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                            @click="profileOpen = !profileOpen"
+                            :aria-expanded="profileOpen.toString()"
+                            aria-haspopup="menu"
+                            aria-label="Open profile menu"
+                        >
+                            @if ($profileAvatarSrc)
+                                <img src="{{ $profileAvatarSrc }}" alt="{{ $profileName }}" class="h-full w-full object-cover">
+                            @else
+                                <span class="uppercase">{{ $profileInitials }}</span>
+                            @endif
+                        </button>
+
+                        <div
+                            x-cloak
+                            x-show="profileOpen"
+                            x-transition.opacity.duration.150ms
+                            @click.outside="profileOpen = false"
+                            class="ws-card absolute right-0 top-14 z-50 w-72 overflow-hidden rounded-3xl border p-3 shadow-xl"
+                            role="menu"
+                        >
+                            <div class="flex items-center gap-3 rounded-2xl px-3 py-3">
+                                <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-sm font-semibold uppercase text-slate-700">
+                                    @if ($profileAvatarSrc)
+                                        <img src="{{ $profileAvatarSrc }}" alt="{{ $profileName }}" class="h-full w-full object-cover">
+                                    @else
+                                        {{ $profileInitials }}
+                                    @endif
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-slate-900">{{ $profileName }}</p>
+                                    <p class="truncate text-xs text-slate-500">{{ $profileEmail }}</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-2 space-y-1 border-t border-slate-200/80 pt-2">
+                                <a href="{{ $profileEditHref }}" class="flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" role="menuitem">
+                                    <span>Edit profile</span>
+                                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                                <a href="{{ $profileLogoutHref }}" class="flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50" role="menuitem">
+                                    <span>Logout</span>
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -563,11 +645,7 @@
                             href="{{ $item['href'] }}"
                             @if (! empty($item['action_href']))
                                 @click.prevent="
-                                    localStorage.setItem('aui-right-sidebar-visible', 'true');
-                                    localStorage.setItem('aui-right-sidebar-collapsed', 'false');
-                                    rightSidebarVisible = true;
-                                    rightSidebarCollapsed = false;
-                                    window.setTimeout(() => window.location.href = '{{ $item['action_href'] }}', 180);
+                                    window.setTimeout(() => window.location.href = '{{ $item['action_href'] }}', 80);
                                 "
                             @endif
                             class="{{ !empty($item['selected']) ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-300 hover:bg-white' }} block rounded-3xl border px-4 py-4 transition"

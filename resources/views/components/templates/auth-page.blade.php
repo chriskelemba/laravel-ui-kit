@@ -87,7 +87,7 @@
     $backgroundPosition = $backgroundPosition ?? ($authBackground['position'] ?? 'center');
     $backgroundSize = $backgroundSize ?? ($authBackground['size'] ?? 'cover');
     $backgroundOverlay = $backgroundOverlay ?? ($authBackground['overlay'] ?? 'rgba(15, 23, 42, 0.58)');
-    $showThemeToggle = $showThemeToggle ?? ($authConfig['show_theme_toggle'] ?? true);
+    $showThemeToggle = false;
     $panelWidth = $panelWidth ?? ($authConfig['panel_width'] ?? '32rem');
     $cardMaxWidth = $cardMaxWidth ?? ($authCard['max_width'] ?? '30rem');
     $cardPadding = $cardPadding ?? ($authCard['padding'] ?? '2rem');
@@ -305,13 +305,7 @@
 
 <div
     x-cloak
-    x-data="{ theme: localStorage.getItem('aui-theme') || 'light' }"
-    x-init="
-        $watch('theme', value => {
-            localStorage.setItem('aui-theme', value);
-            document.documentElement.setAttribute('data-aui-theme', value);
-        });
-    "
+    x-data="{ theme: 'light' }"
     {{ $rootAttributes->class(['relative isolate min-h-screen overflow-hidden']) }}
     style="--aui-auth-panel-width: {{ $panelWidth }}; --aui-auth-floating-width: {{ $resolvedContentWidth }}; {{ $themeStyle }}"
     :class="theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'"

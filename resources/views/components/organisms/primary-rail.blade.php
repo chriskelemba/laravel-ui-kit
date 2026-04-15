@@ -26,9 +26,8 @@
                 $icon = IconResolver::resolve($item['icon'] ?? null, $label);
                 $active = (bool) ($item['active'] ?? false);
                 $togglesSidebar = (bool) ($item['toggles_sidebar'] ?? false);
-                $selectionExpr = $side === 'right'
-                    ? "(!{$collapsedVar} ? {$activeVar} : null)"
-                    : $activeVar;
+                $preventsNavigation = $togglesSidebar && ($href === '#' || $href === '');
+                $selectionExpr = $activeVar;
                 $baseItemClasses = 'text-slate-400 hover:text-slate-200';
                 $baseItemClassesLight = 'text-slate-500 hover:text-slate-700';
                 $iconBaseClasses = $active
@@ -45,8 +44,14 @@
                     @mouseenter="{{ $hoverVar }} = null"
                     @focus="{{ $hoverVar }} = null"
                 @endif
-                @if ($togglesSidebar)
-                    @click.prevent="{{ $activeVar }} = '{{ $key }}'; {{ $collapsedVar }} = false; {{ $hoverVar }} = null"
+                @if ($side === 'right')
+                    @mouseenter="if (window.innerWidth >= 1024 && rightSidebarCollapsible && rightSidebarCollapsed) rightSidebarHoverExpanded = true; {{ $hoverVar }} = '{{ $key }}'"
+                    @focus="if (window.innerWidth >= 1024 && rightSidebarCollapsible && rightSidebarCollapsed) rightSidebarHoverExpanded = true; {{ $hoverVar }} = '{{ $key }}'"
+                @endif
+                @if ($preventsNavigation)
+                    @click.prevent="{{ $activeVar }} = '{{ $key }}'; {{ $collapsedVar }} = false; sidebarOpen = true; {{ $hoverVar }} = null"
+                @elseif ($togglesSidebar)
+                    @click="{{ $activeVar }} = '{{ $key }}'; {{ $collapsedVar }} = false; {{ $side === 'right' ? 'rightSidebarVisible = true;' : 'sidebarOpen = true;' }} {{ $hoverVar }} = null"
                 @endif
                 :class="(theme === 'dark'
                     ? ('{{ $baseItemClasses }}')
