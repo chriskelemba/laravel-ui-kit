@@ -39,6 +39,10 @@ class LaravelUiKitServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../../resources/views' => resource_path('views/vendor/ui-kit'),
             ], 'ui-kit-views');
+
+            $this->publishes([
+                __DIR__ . '/../../public' => public_path('vendor/ui-kit'),
+            ], 'ui-kit-assets');
         }
     }
 

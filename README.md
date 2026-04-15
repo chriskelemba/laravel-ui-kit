@@ -10,6 +10,12 @@ composer require chriskelemba/laravel-ui-kit
 
 No publishing required. Components are auto-registered.
 
+To use the bundled UI Kit styles without running a frontend dev server, publish the package assets:
+
+```bash
+php artisan vendor:publish --tag=ui-kit-assets
+```
+
 ## Usage
 
 ### Hyphenated tags (recommended)
@@ -350,5 +356,5 @@ If they want total visual control, they can replace the background or logo regio
 ## Requirements
 
 - Laravel 12+
-- Tailwind CSS
+- Tailwind CSS is only required if you want to rebuild or override the package styles
 - Alpine.js (auto-loaded by package layout)

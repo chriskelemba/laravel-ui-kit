@@ -13,6 +13,13 @@ return [
         'src' => 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
         'defer' => true,
     ],
+    'assets' => [
+        'css' => [
+            'enabled' => true,
+            'src' => 'vendor/ui-kit/css/ui-kit.css',
+            'load_with_vite' => true,
+        ],
+    ],
     'icons' => [
         'font_awesome' => [
             'enabled' => true,
