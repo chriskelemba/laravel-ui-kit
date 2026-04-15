@@ -9,10 +9,11 @@
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
         @php
-            $uiKitCss = config('ui-kit.assets.css.src', 'vendor/ui-kit/css/ui-kit.css');
+            $uiKitCss = config('ui-kit.assets.css.src', 'ui-kit/assets/ui-kit.css');
             $uiKitCssEnabled = config('ui-kit.assets.css.enabled', true) && $uiKitCss;
-            $uiKitCssExists = $uiKitCssEnabled && file_exists(public_path($uiKitCss));
-            $uiKitCssVersion = $uiKitCssExists ? filemtime(public_path($uiKitCss)) : null;
+            $uiKitCssVersion = class_exists(\Composer\InstalledVersions::class)
+                ? \Composer\InstalledVersions::getPrettyVersion('chriskelemba/laravel-ui-kit')
+                : null;
             $hasViteAssets = file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'));
         @endphp
 
@@ -20,8 +21,8 @@
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
 
-        @if ($uiKitCssExists && (! $hasViteAssets || config('ui-kit.assets.css.load_with_vite', false)))
-            <link rel="stylesheet" href="{{ asset($uiKitCss) }}@if($uiKitCssVersion)?v={{ $uiKitCssVersion }}@endif">
+        @if ($uiKitCssEnabled && (! $hasViteAssets || config('ui-kit.assets.css.load_with_vite', false)))
+            <link rel="stylesheet" href="{{ url($uiKitCss) }}@if($uiKitCssVersion)?v={{ $uiKitCssVersion }}@endif">
         @endif
 
         @if (config('ui-kit.icons.font_awesome.enabled', true))

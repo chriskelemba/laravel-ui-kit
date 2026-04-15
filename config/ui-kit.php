@@ -16,7 +16,7 @@ return [
     'assets' => [
         'css' => [
             'enabled' => true,
-            'src' => 'vendor/ui-kit/css/ui-kit.css',
+            'src' => 'ui-kit/assets/ui-kit.css',
             'load_with_vite' => true,
         ],
     ],

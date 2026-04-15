@@ -2,7 +2,9 @@
 
 namespace ChrisKelemba\LaravelUiKit\Providers;
 
+use ChrisKelemba\LaravelUiKit\Http\Controllers\AssetController;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -16,6 +18,7 @@ class LaravelUiKitServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'ui-kit');
+        $this->registerAssetRoutes();
 
         $prefix = config('ui-kit.component_prefix', 'ui-kit');
         Blade::anonymousComponentPath(__DIR__ . '/../../resources/views/components', $prefix);
@@ -40,10 +43,14 @@ class LaravelUiKitServiceProvider extends ServiceProvider
                 __DIR__ . '/../../resources/views' => resource_path('views/vendor/ui-kit'),
             ], 'ui-kit-views');
 
-            $this->publishes([
-                __DIR__ . '/../../public' => public_path('vendor/ui-kit'),
-            ], 'ui-kit-assets');
+            $this->publishes([], 'ui-kit-assets');
         }
+    }
+
+    protected function registerAssetRoutes(): void
+    {
+        Route::get('ui-kit/assets/ui-kit.css', [AssetController::class, 'css'])
+            ->name('ui-kit.assets.css');
     }
 
     /**

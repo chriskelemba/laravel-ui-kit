@@ -8,13 +8,7 @@ Blade-first UI components for Laravel. Includes a full set of atoms, molecules, 
 composer require chriskelemba/laravel-ui-kit
 ```
 
-No publishing required. Components are auto-registered.
-
-To use the bundled UI Kit styles without running a frontend dev server, publish the package assets:
-
-```bash
-php artisan vendor:publish --tag=ui-kit-assets
-```
+No publishing required. Components, Alpine, and the bundled UI Kit stylesheet are auto-registered.
 
 ## Usage
 
