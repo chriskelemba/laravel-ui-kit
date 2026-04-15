@@ -224,6 +224,51 @@ UI Kit also includes a higher-level shell template for multi-pane layouts where 
 
 You can pass your own navigation arrays, branding, labels, badges, helper rail items, and helper panel blocks to shape the shell for any module in your app.
 
+### Workspace Profile Menu
+
+The workspace shell profile menu resolves the current authenticated user automatically when auth is available. If the host app has no logged-in user, it falls back to `Default User` and uses the first letter of the resolved name as the avatar.
+
+Consumers can support different user shapes by publishing and editing `config/ui-kit.php`:
+
+```php
+'workspace' => [
+    'profile' => [
+        'fields' => [
+            'name' => ['name', 'username', 'full_name', 'display_name', 'Name', 'Username'],
+            'email' => ['email', 'Email', 'mail'],
+            'avatar_src' => ['avatar_src', 'avatar_url', 'profile_photo_url', 'photo_url'],
+        ],
+        'fallback' => [
+            'name' => 'Default User',
+            'email' => null,
+        ],
+        'routes' => [
+            'edit' => ['name' => 'profile.edit', 'href' => null, 'parameters' => []],
+            'logout' => ['name' => 'logout', 'href' => null, 'parameters' => []],
+        ],
+    ],
+],
+```
+
+You can also override the profile per render:
+
+```blade
+<x-ui-kit::templates.workspace-shell
+    :profile-user="$member"
+    profile-edit-route="account.profile.edit"
+    profile-logout-route="sessions.destroy"
+/>
+```
+
+For apps without named routes, pass direct URLs instead:
+
+```blade
+<x-ui-kit::templates.workspace-shell
+    profile-edit-href="/account"
+    profile-logout-href="/logout"
+/>
+```
+
 ## Auth Pages
 
 UI Kit includes an auth template that gives consumers a flexible shell for login, register, forgot-password, and other auth views without forcing one fixed design.

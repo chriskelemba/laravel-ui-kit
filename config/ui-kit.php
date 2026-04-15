@@ -20,6 +20,31 @@ return [
             'load_with_vite' => true,
         ],
     ],
+    'workspace' => [
+        'profile' => [
+            'fields' => [
+                'name' => ['name', 'username', 'full_name', 'display_name', 'Name', 'Username'],
+                'email' => ['email', 'Email', 'mail'],
+                'avatar_src' => ['avatar_src', 'avatar_url', 'profile_photo_url', 'photo_url'],
+            ],
+            'fallback' => [
+                'name' => 'Default User',
+                'email' => null,
+            ],
+            'routes' => [
+                'edit' => [
+                    'name' => null,
+                    'href' => null,
+                    'parameters' => [],
+                ],
+                'logout' => [
+                    'name' => null,
+                    'href' => null,
+                    'parameters' => [],
+                ],
+            ],
+        ],
+    ],
     'icons' => [
         'font_awesome' => [
             'enabled' => true,

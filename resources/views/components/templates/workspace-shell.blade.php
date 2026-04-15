@@ -27,18 +27,31 @@
     'profileName' => null,
     'profileEmail' => null,
     'profileAvatarSrc' => null,
-    'profileEditHref' => '#',
-    'profileLogoutHref' => '#',
+    'profileUser' => null,
+    'profileEditHref' => null,
+    'profileLogoutHref' => null,
+    'profileEditRoute' => null,
+    'profileLogoutRoute' => null,
 ])
 
 @php
-    $profileName = $profileName ?? (auth()->user()->name ?? 'Library Admin');
-    $profileEmail = $profileEmail ?? (auth()->user()->email ?? 'admin@library.test');
-    $profileInitials = collect(explode(' ', $profileName))
-        ->filter()
-        ->map(fn ($part) => mb_substr($part, 0, 1))
-        ->take(2)
-        ->join('') ?: 'U';
+    $profile = \ChrisKelemba\LaravelUiKit\Support\ProfileResolver::resolve([
+        'user' => $profileUser,
+        'name' => $profileName,
+        'email' => $profileEmail,
+        'avatar_src' => $profileAvatarSrc,
+        'edit_href' => $profileEditHref,
+        'logout_href' => $profileLogoutHref,
+        'edit_route' => $profileEditRoute,
+        'logout_route' => $profileLogoutRoute,
+    ]);
+
+    $profileName = $profile['name'];
+    $profileEmail = $profile['email'];
+    $profileAvatarSrc = $profile['avatar_src'];
+    $profileInitials = $profile['initials'];
+    $profileEditHref = $profile['edit_href'];
+    $profileLogoutHref = $profile['logout_href'];
 
     $currentSidebarSection = $sidebarSections[$activePrimarySection] ?? reset($sidebarSections) ?: [
         'compose' => null,
