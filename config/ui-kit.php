@@ -54,6 +54,7 @@ return [
             'overview' => 'fa-solid fa-house',
             'home' => 'fa-solid fa-house',
             'dashboard' => 'fa-solid fa-house',
+            'map' => 'fa-solid fa-map',
             'book_open' => 'fa-solid fa-book-open',
             'squares_2x2' => 'fa-solid fa-table-cells-large',
             'queue_list' => 'fa-solid fa-list-ul',

@@ -640,85 +640,91 @@
             </section>
         @endif
 
-        <section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <article class="ws-card rounded-[32px] border p-6 shadow-sm">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{{ $listSection['eyebrow'] }}</p>
-                        <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ $listSection['title'] }}</h2>
-                    </div>
-                    @if (! empty($listSection['badge']))
-                        <span class="ws-badge-success rounded-full px-3 py-1 text-xs font-semibold">{{ $listSection['badge'] }}</span>
-                    @endif
-                </div>
-
-                <div class="mt-6 space-y-3">
-                    @foreach ($listSection['items'] as $item)
-                        <a
-                            href="{{ $item['href'] }}"
-                            @if (! empty($item['action_href']))
-                                @click.prevent="
-                                    window.setTimeout(() => window.location.href = '{{ $item['action_href'] }}', 80);
-                                "
-                            @endif
-                            class="{{ !empty($item['selected']) ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-300 hover:bg-white' }} block rounded-3xl border px-4 py-4 transition"
-                        >
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-slate-900">{{ $item['title'] }}</p>
-                                    <p class="mt-1 text-sm text-slate-600">{{ $item['subtitle'] }}</p>
-                                    <p class="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">{{ $item['meta'] }}</p>
-                                </div>
-                                <div class="shrink-0 text-right">
-                                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{{ $item['status_label'] ?? 'Status' }}</p>
-                                    <p class="mt-1 text-sm font-medium text-slate-800">{{ $item['status'] }}</p>
-                                </div>
+        @if (! empty($listSection['items']) || ! empty($asideBlocks) || ! empty($listSection['title']))
+            <section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+                @if (! empty($listSection['title']) || ! empty($listSection['items']))
+                    <article class="ws-card rounded-[32px] border p-6 shadow-sm">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{{ $listSection['eyebrow'] }}</p>
+                                <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ $listSection['title'] }}</h2>
                             </div>
-                        </a>
-                    @endforeach
-                </div>
-            </article>
+                            @if (! empty($listSection['badge']))
+                                <span class="ws-badge-success rounded-full px-3 py-1 text-xs font-semibold">{{ $listSection['badge'] }}</span>
+                            @endif
+                        </div>
 
-            <div class="space-y-6">
-                @foreach ($asideBlocks as $block)
-                    @if (($block['type'] ?? null) === 'badge-list')
-                        <article class="ws-card rounded-[32px] border p-6 shadow-sm">
-                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{{ $block['eyebrow'] }}</p>
-                            <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ $block['title'] }}</h2>
-                            <div class="mt-6 space-y-3">
-                                @foreach ($block['items'] ?? [] as $item)
-                                    <div class="flex items-center justify-between rounded-3xl border border-slate-200/80 px-4 py-4">
-                                        <div>
+                        <div class="mt-6 space-y-3">
+                            @foreach ($listSection['items'] as $item)
+                                <a
+                                    href="{{ $item['href'] }}"
+                                    @if (! empty($item['action_href']))
+                                        @click.prevent="
+                                            window.setTimeout(() => window.location.href = '{{ $item['action_href'] }}', 80);
+                                        "
+                                    @endif
+                                    class="{{ !empty($item['selected']) ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-300 hover:bg-white' }} block rounded-3xl border px-4 py-4 transition"
+                                >
+                                    <div class="flex items-center justify-between gap-4">
+                                        <div class="min-w-0">
                                             <p class="text-sm font-semibold text-slate-900">{{ $item['title'] }}</p>
                                             <p class="mt-1 text-sm text-slate-600">{{ $item['subtitle'] }}</p>
+                                            <p class="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">{{ $item['meta'] }}</p>
                                         </div>
-                                        <span class="ws-badge-soft rounded-full px-3 py-1 text-xs font-semibold">{{ $item['badge'] }}</span>
+                                        <div class="shrink-0 text-right">
+                                            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{{ $item['status_label'] ?? 'Status' }}</p>
+                                            <p class="mt-1 text-sm font-medium text-slate-800">{{ $item['status'] }}</p>
+                                        </div>
                                     </div>
-                                @endforeach
-                            </div>
-                        </article>
-                    @elseif (($block['type'] ?? null) === 'feature')
-                        <article class="ws-feature rounded-[32px] border border-slate-200/80 p-6 text-white shadow-sm">
-                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">{{ $block['eyebrow'] }}</p>
-                            <h2 class="mt-2 text-2xl font-semibold tracking-tight">{{ $block['title'] }}</h2>
-                            <p class="mt-3 text-sm leading-6 text-slate-300">{{ $block['description'] }}</p>
-                        </article>
-                    @elseif (($block['type'] ?? null) === 'simple-cards')
-                        <article class="ws-card rounded-[32px] border p-6 shadow-sm">
-                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{{ $block['eyebrow'] }}</p>
-                            <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ $block['title'] }}</h2>
-                            <div class="mt-6 space-y-3">
-                                @foreach ($block['items'] ?? [] as $item)
-                                    <div class="rounded-3xl border border-slate-200/80 px-4 py-4">
-                                        <p class="text-sm font-semibold text-slate-900">{{ $item['title'] }}</p>
-                                        <p class="mt-1 text-sm text-slate-600">{{ $item['subtitle'] }}</p>
+                                </a>
+                            @endforeach
+                        </div>
+                    </article>
+                @endif
+
+                @if (! empty($asideBlocks))
+                    <div class="space-y-6">
+                        @foreach ($asideBlocks as $block)
+                            @if (($block['type'] ?? null) === 'badge-list')
+                                <article class="ws-card rounded-[32px] border p-6 shadow-sm">
+                                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{{ $block['eyebrow'] }}</p>
+                                    <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ $block['title'] }}</h2>
+                                    <div class="mt-6 space-y-3">
+                                        @foreach ($block['items'] ?? [] as $item)
+                                            <div class="flex items-center justify-between rounded-3xl border border-slate-200/80 px-4 py-4">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-900">{{ $item['title'] }}</p>
+                                                    <p class="mt-1 text-sm text-slate-600">{{ $item['subtitle'] }}</p>
+                                                </div>
+                                                <span class="ws-badge-soft rounded-full px-3 py-1 text-xs font-semibold">{{ $item['badge'] }}</span>
+                                            </div>
+                                        @endforeach
                                     </div>
-                                @endforeach
-                            </div>
-                        </article>
-                    @endif
-                @endforeach
-            </div>
-        </section>
+                                </article>
+                            @elseif (($block['type'] ?? null) === 'feature')
+                                <article class="ws-feature rounded-[32px] border border-slate-200/80 p-6 text-white shadow-sm">
+                                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">{{ $block['eyebrow'] }}</p>
+                                    <h2 class="mt-2 text-2xl font-semibold tracking-tight">{{ $block['title'] }}</h2>
+                                    <p class="mt-3 text-sm leading-6 text-slate-300">{{ $block['description'] }}</p>
+                                </article>
+                            @elseif (($block['type'] ?? null) === 'simple-cards')
+                                <article class="ws-card rounded-[32px] border p-6 shadow-sm">
+                                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{{ $block['eyebrow'] }}</p>
+                                    <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ $block['title'] }}</h2>
+                                    <div class="mt-6 space-y-3">
+                                        @foreach ($block['items'] ?? [] as $item)
+                                            <div class="rounded-3xl border border-slate-200/80 px-4 py-4">
+                                                <p class="text-sm font-semibold text-slate-900">{{ $item['title'] }}</p>
+                                                <p class="mt-1 text-sm text-slate-600">{{ $item['subtitle'] }}</p>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </article>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
+            </section>
+        @endif
     </div>
 </x-ui-kit::templates.app-shell>
