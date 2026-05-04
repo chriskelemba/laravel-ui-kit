@@ -224,6 +224,47 @@ UI Kit also includes a higher-level shell template for multi-pane layouts where 
 
 You can pass your own navigation arrays, branding, labels, badges, helper rail items, and helper panel blocks to shape the shell for any module in your app.
 
+### Workspace Header Branding
+
+The workspace shell can now show an optional second logo in the center of the header, and an optional dropdown beside the left brand area.
+
+By default:
+
+- left branding is enabled
+- center logo is disabled
+- header dropdown is disabled
+
+You can configure shared branding in `config/ui-kit.php`:
+
+```php
+'branding' => [
+    'logo' => asset('images/logo.svg'),
+    'center_logo' => asset('images/logo-center.svg'),
+    'name' => 'Acme',
+    'subtitle' => 'Workspace portal',
+    'href' => '/',
+],
+```
+
+Then opt in from the shell:
+
+```blade
+<x-ui-kit::templates.workspace-shell
+    title="Travel Desk"
+    :show-header-branding="true"
+    :show-header-center-logo="true"
+    :show-header-dropdown="true"
+    header-dropdown-label="Acme Group"
+    :header-dropdown-items="[
+        ['label' => 'Acme Group', 'href' => '#'],
+        ['label' => 'Acme Kenya', 'href' => '#'],
+        ['label' => 'Acme Uganda', 'href' => '#'],
+    ]"
+/>
+```
+
+You can also pass `header-center-logo-src` directly for per-page overrides, or provide a custom `centerBrand` slot if you want the middle header content to be a richer block instead of a plain image.
+
 ### Workspace Profile Menu
 
 The workspace shell profile menu resolves the current authenticated user automatically when auth is available. If the host app has no logged-in user, it falls back to `Default User` and uses the first letter of the resolved name as the avatar.

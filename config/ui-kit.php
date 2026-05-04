@@ -4,6 +4,7 @@ return [
     'component_prefix' => 'ui-kit',
     'branding' => [
         'logo' => null,
+        'center_logo' => null,
         'name' => env('APP_NAME', 'Laravel'),
         'subtitle' => null,
         'href' => '/',
