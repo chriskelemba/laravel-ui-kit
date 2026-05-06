@@ -45,6 +45,21 @@
 ])
 
 @php
+    $currentRouteName = request()->route()?->getName();
+    $currentUrl = url()->current();
+
+    $resolveNavigationMatch = function (array $item) use ($currentRouteName, $currentUrl): bool {
+        if (filled($currentRouteName) && filled($item['route'] ?? null) && $item['route'] === $currentRouteName) {
+            return true;
+        }
+
+        if (! filled($item['href'] ?? null)) {
+            return false;
+        }
+
+        return url($item['href']) === $currentUrl;
+    };
+
     $profile = \ChrisKelemba\LaravelUiKit\Support\ProfileResolver::resolve([
         'user' => $profileUser,
         'name' => $profileName,
@@ -63,7 +78,29 @@
     $profileEditHref = $profile['edit_href'];
     $profileLogoutHref = $profile['logout_href'];
 
-    $currentSidebarSection = $sidebarSections[$activePrimarySection] ?? reset($sidebarSections) ?: [
+    $resolvedActivePrimarySection = $activePrimarySection;
+
+    if (! filled($resolvedActivePrimarySection)) {
+        foreach ($sidebarSections as $sectionKey => $section) {
+            foreach ($section['items'] ?? [] as $item) {
+                if ($resolveNavigationMatch($item)) {
+                    $resolvedActivePrimarySection = $sectionKey;
+                    break 2;
+                }
+            }
+        }
+    }
+
+    if (! filled($resolvedActivePrimarySection)) {
+        foreach ($primaryRailItems as $item) {
+            if ($resolveNavigationMatch($item)) {
+                $resolvedActivePrimarySection = $item['key'] ?? null;
+                break;
+            }
+        }
+    }
+
+    $currentSidebarSection = $sidebarSections[$resolvedActivePrimarySection] ?? reset($sidebarSections) ?: [
         'compose' => null,
         'items' => [],
         'spaces_title' => null,
@@ -72,8 +109,22 @@
         'note_body' => null,
     ];
 
-    $sidebarItems = array_map(function (array $item) use ($activeSidebarItem) {
-        $item['active'] = ($item['key'] ?? null) === $activeSidebarItem;
+    $primaryRailItems = array_map(function (array $item) use ($resolvedActivePrimarySection, $activePrimarySection, $resolveNavigationMatch) {
+        $matchesExplicitKey = ($item['key'] ?? null) === $activePrimarySection;
+        $matchesResolvedKey = ($item['key'] ?? null) === $resolvedActivePrimarySection;
+
+        $item['active'] = $matchesExplicitKey || (! filled($activePrimarySection) && ($matchesResolvedKey || $resolveNavigationMatch($item)));
+
+        return $item;
+    }, $primaryRailItems);
+
+    $sidebarItems = array_map(function (array $item) use ($activeSidebarItem, $currentRouteName, $currentUrl) {
+        $matchesExplicitKey = ($item['key'] ?? null) === $activeSidebarItem;
+        $matchesRouteName = filled($currentRouteName) && (($item['route'] ?? null) === $currentRouteName);
+        $matchesHref = filled($item['href'] ?? null) && url($item['href']) === $currentUrl;
+
+        $item['active'] = $matchesExplicitKey || (! filled($activeSidebarItem) && ($matchesRouteName || $matchesHref));
+
         return $item;
     }, $currentSidebarSection['items'] ?? []);
 
@@ -273,7 +324,7 @@
     :show-sidebar="true"
     :sidebar-open="true"
     sidebar-mode="toggle"
-    :active-primary-section="$activePrimarySection"
+    :active-primary-section="$resolvedActivePrimarySection"
     :show-sidebar-toggle="true"
     :show-sidebar-toggle-desktop="true"
     :sidebar-collapsible="true"
@@ -288,7 +339,7 @@
     right-sidebar-width="20rem"
     :active-right-primary-section="$forceRightSidebarOpen ? $rightSidebarView : null"
     x-init="
-        activePrimarySection = @js($activePrimarySection);
+        activePrimarySection = @js($resolvedActivePrimarySection);
         rightSidebarVisible = @js($showRightSidebar && $forceRightSidebarOpen);
         rightSidebarCollapsed = @js($showRightSidebar && ! $forceRightSidebarOpen);
         activeRightPrimarySection = @js($forceRightSidebarOpen ? $rightSidebarView : null);
