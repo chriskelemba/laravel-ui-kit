@@ -58,7 +58,7 @@
 
     $profileName = $profile['name'];
     $profileEmail = $profile['email'];
-    $profileAvatarSrc = \ChrisKelemba\LaravelUiKit\Support\MediaUrl::resolve($profile['avatar_src']);
+    $profileAvatarSrc = $profile['avatar_src'];
     $profileInitials = $profile['initials'];
     $profileEditHref = $profile['edit_href'];
     $profileLogoutHref = $profile['logout_href'];
@@ -103,9 +103,9 @@
     ];
 
     $branding = config('ui-kit.branding', []);
-    $headerLogoSrc = \ChrisKelemba\LaravelUiKit\Support\BrandingResolver::resolveLogo($headerLogoSrc ?? ($branding['logo'] ?? null));
+    $headerLogoSrc = $headerLogoSrc ?? ($branding['logo'] ?? null);
     $headerLogoAlt = $headerLogoAlt ?: ($title ?: ($branding['name'] ?? config('app.name', 'Brand')));
-    $headerCenterLogoSrc = \ChrisKelemba\LaravelUiKit\Support\BrandingResolver::resolveLogo($headerCenterLogoSrc ?? ($branding['center_logo'] ?? null));
+    $headerCenterLogoSrc = $headerCenterLogoSrc ?? ($branding['center_logo'] ?? null);
     $headerCenterLogoAlt = $headerCenterLogoAlt ?: ($title ?: ($branding['name'] ?? config('app.name', 'Brand')));
 
     $themeColors = array_merge([
@@ -626,7 +626,7 @@
                                                         <div class="ws-soft-card rounded-2xl border px-4 py-4">
                                                             @if (! empty($item['image_src']))
                                                                 <img
-                                                                    src="{{ \ChrisKelemba\LaravelUiKit\Support\MediaUrl::resolve($item['image_src']) }}"
+                                                                    src="{{ $item['image_src'] }}"
                                                                     alt="{{ $item['title'] ?? 'Image' }}"
                                                                     class="mb-3 h-28 w-full rounded-2xl object-cover"
                                                                 >
@@ -641,7 +641,7 @@
                                             <article class="ws-panel-card rounded-3xl border p-5 shadow-sm">
                                                 @if (! empty($block['image_src']))
                                                     <img
-                                                        src="{{ \ChrisKelemba\LaravelUiKit\Support\MediaUrl::resolve($block['image_src']) }}"
+                                                        src="{{ $block['image_src'] }}"
                                                         alt="{{ $block['title'] ?? 'Detail image' }}"
                                                         class="mb-4 h-40 w-full rounded-3xl object-cover"
                                                     >
@@ -841,7 +841,7 @@
                                         <div class="flex min-w-0 items-center gap-4">
                                             @if (! empty($item['image_src']))
                                                 <img
-                                                    src="{{ \ChrisKelemba\LaravelUiKit\Support\MediaUrl::resolve($item['image_src']) }}"
+                                                    src="{{ $item['image_src'] }}"
                                                     alt="{{ $item['title'] ?? 'Item image' }}"
                                                     class="h-16 w-16 shrink-0 rounded-2xl object-cover"
                                                 >
