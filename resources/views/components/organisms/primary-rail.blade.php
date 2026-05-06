@@ -30,16 +30,20 @@
                 $selectionExpr = $activeVar;
                 $baseItemClasses = 'text-slate-400 hover:text-slate-200';
                 $baseItemClassesLight = 'text-slate-500 hover:text-slate-700';
+                $activeItemClasses = $side === 'right' ? 'text-white' : 'text-slate-900';
                 $iconBaseClasses = $active
                     ? ($side === 'right' ? 'bg-transparent group-hover:bg-white/5' : 'bg-transparent')
                     : 'bg-transparent group-hover:bg-white/5';
                 $iconBaseClassesLight = $active
                     ? ($side === 'right' ? 'bg-transparent group-hover:bg-white/80' : 'bg-transparent')
                     : 'bg-transparent group-hover:bg-white/80';
+                $activeIconClasses = $side === 'right'
+                    ? 'bg-white/15 text-white aui-primary-rail-icon-active'
+                    : 'aui-primary-rail-icon-active';
             @endphp
             <a
                 href="{{ $href }}"
-                class="group flex w-full flex-col items-center gap-2 rounded-3xl px-1 py-3 text-center text-[11px] font-medium leading-tight transition"
+                class="{{ $active ? $activeItemClasses : '' }} group flex w-full flex-col items-center gap-2 rounded-3xl px-1 py-3 text-center text-[11px] font-medium leading-tight transition"
                 @if ($side !== 'right')
                     @mouseenter="{{ $hoverVar }} = null"
                     @focus="{{ $hoverVar }} = null"
@@ -60,7 +64,7 @@
                         ? ' ' + (theme === 'dark' ? 'text-white' : 'text-slate-900')
                         : '')"
             >
-                <span class="aui-primary-rail-icon-hoverable flex h-10 w-14 items-center justify-center overflow-visible rounded-full text-lg leading-none transition"
+                <span class="{{ $active ? $activeIconClasses : '' }} aui-primary-rail-icon-hoverable flex h-10 w-14 items-center justify-center overflow-visible rounded-full text-lg leading-none transition"
                     :class="(theme === 'dark'
                         ? '{{ $iconBaseClasses }}'
                         : '{{ $iconBaseClassesLight }}')
