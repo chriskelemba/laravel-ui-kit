@@ -457,7 +457,13 @@
                     </label>
                 @endif
 
-                <div class="flex shrink-0 items-center justify-end">
+                <div class="flex shrink-0 items-center justify-end gap-3">
+                    @if (isset($actions) && $actions->hasActualContent())
+                        <div class="flex shrink-0 items-center">
+                            {{ $actions }}
+                        </div>
+                    @endif
+
                     <div class="relative shrink-0" x-data="{ profileOpen: false }" @keydown.escape.window="profileOpen = false">
                         <button
                             type="button"
