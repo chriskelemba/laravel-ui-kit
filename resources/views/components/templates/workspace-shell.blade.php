@@ -73,12 +73,10 @@
 
     $profileName = $profile['name'];
     $profileEmail = $profile['email'];
-    $profileAvatarSrc = $profile['avatar_src'];
+    $profileAvatarSrc = \ChrisKelemba\LaravelUiKit\Support\MediaUrl::resolve($profile['avatar_src']);
     $profileInitials = $profile['initials'];
     $profileEditHref = $profile['edit_href'];
     $profileLogoutHref = $profile['logout_href'];
-    $resolvedActiveSidebarItem = is_string($activeSidebarItem) && $activeSidebarItem !== '' ? $activeSidebarItem : null;
-    $resolvedRightSidebarView = is_string($rightSidebarView) && $rightSidebarView !== '' ? $rightSidebarView : null;
 
     $resolvedActivePrimarySection = $activePrimarySection;
 
@@ -120,12 +118,12 @@
         return $item;
     }, $primaryRailItems);
 
-    $sidebarItems = array_map(function (array $item) use ($resolvedActiveSidebarItem, $currentRouteName, $currentUrl) {
-        $matchesExplicitKey = ($item['key'] ?? null) === $resolvedActiveSidebarItem;
+    $sidebarItems = array_map(function (array $item) use ($activeSidebarItem, $currentRouteName, $currentUrl) {
+        $matchesExplicitKey = ($item['key'] ?? null) === $activeSidebarItem;
         $matchesRouteName = filled($currentRouteName) && (($item['route'] ?? null) === $currentRouteName);
         $matchesHref = filled($item['href'] ?? null) && url($item['href']) === $currentUrl;
 
-        $item['active'] = $matchesExplicitKey || (! filled($resolvedActiveSidebarItem) && ($matchesRouteName || $matchesHref));
+        $item['active'] = $matchesExplicitKey || (! filled($activeSidebarItem) && ($matchesRouteName || $matchesHref));
 
         return $item;
     }, $currentSidebarSection['items'] ?? []);
@@ -137,36 +135,31 @@
         'items' => [],
     ], $listSection);
 
-    $normalizedListItems = array_values(array_map(function (array $item) use ($resolvedRightSidebarView) {
-        $item['panel_key'] = $item['panel_key'] ?? $resolvedRightSidebarView;
+    $normalizedListItems = array_values(array_map(function (array $item) use ($rightSidebarView) {
+        $item['panel_key'] = $item['panel_key'] ?? $rightSidebarView;
 
         return $item;
     }, $listSection['items']));
 
     $listSection['items'] = $normalizedListItems;
 
-    $rightPanelHeader = filled($resolvedRightSidebarView)
-        ? ($rightPanelHeaders[$resolvedRightSidebarView] ?? null)
-        : null;
-
-    $rightPanelHeader ??= [
+    $rightPanelHeader = $rightPanelHeaders[$rightSidebarView] ?? [
         'eyebrow' => null,
         'title' => null,
         'description' => null,
     ];
 
-    $rightPanel = filled($resolvedRightSidebarView)
-        ? ($rightPanels[$resolvedRightSidebarView] ?? null)
-        : null;
-
-    $rightPanel ??= [
+    $rightPanel = $rightPanels[$rightSidebarView] ?? [
         'blocks' => [],
     ];
 
+    $hasCustomRightSidebarContent = isset($rightSidebarContent) && trim((string) $rightSidebarContent) !== '';
+    $hasRenderableRightSidebar = $showRightSidebar && ($hasCustomRightSidebarContent || ! empty($rightPanels));
+
     $branding = config('ui-kit.branding', []);
-    $headerLogoSrc = $headerLogoSrc ?? ($branding['logo'] ?? null);
+    $headerLogoSrc = \ChrisKelemba\LaravelUiKit\Support\BrandingResolver::resolveLogo($headerLogoSrc ?? ($branding['logo'] ?? null));
     $headerLogoAlt = $headerLogoAlt ?: ($title ?: ($branding['name'] ?? config('app.name', 'Brand')));
-    $headerCenterLogoSrc = $headerCenterLogoSrc ?? ($branding['center_logo'] ?? null);
+    $headerCenterLogoSrc = \ChrisKelemba\LaravelUiKit\Support\BrandingResolver::resolveLogo($headerCenterLogoSrc ?? ($branding['center_logo'] ?? null));
     $headerCenterLogoAlt = $headerCenterLogoAlt ?: ($title ?: ($branding['name'] ?? config('app.name', 'Brand')));
 
     $themeColors = array_merge([
@@ -326,7 +319,7 @@
     </style>
 @endpush
 
-<x-ui-kit::templates.app-shell
+    <x-ui-kit::templates.app-shell
     class="workspace-shell"
     style="{{ $themeStyle }}"
     :title="$title"
@@ -347,12 +340,12 @@
     :right-sidebar-collapsed="$showRightSidebar ? false : true"
     right-sidebar-collapse-mode="hidden"
     right-sidebar-width="20rem"
-    :active-right-primary-section="$forceRightSidebarOpen ? $resolvedRightSidebarView : null"
+    :active-right-primary-section="$forceRightSidebarOpen ? $rightSidebarView : null"
     x-init="
         activePrimarySection = @js($resolvedActivePrimarySection);
         rightSidebarVisible = @js($showRightSidebar && $forceRightSidebarOpen);
         rightSidebarCollapsed = @js($showRightSidebar && ! $forceRightSidebarOpen);
-        activeRightPrimarySection = @js($forceRightSidebarOpen ? $resolvedRightSidebarView : null);
+        activeRightPrimarySection = @js($forceRightSidebarOpen ? $rightSidebarView : null);
 
         if (window.innerWidth >= 1024) {
             sidebarCollapsed = @js($sidebarCollapsed);
@@ -458,11 +451,11 @@
                 @endif
 
                 <div class="flex shrink-0 items-center justify-end gap-3">
-                    @if (isset($actions) && $actions->hasActualContent())
-                        <div class="flex shrink-0 items-center">
+                    @isset($actions)
+                        <div class="flex shrink-0 items-center gap-3">
                             {{ $actions }}
                         </div>
-                    @endif
+                    @endisset
 
                     <div class="relative shrink-0" x-data="{ profileOpen: false }" @keydown.escape.window="profileOpen = false">
                         <button
@@ -606,15 +599,8 @@
                     class="min-h-0 flex-1 flex-col"
                     :class="rightSidebarCollapsed && !rightSidebarHoverExpanded ? 'hidden' : 'flex'"
                 >
-                    @foreach ($rightPanels as $panelKey => $panel)
-                        @php
-                            $panelHeader = $rightPanelHeaders[$panelKey] ?? $rightPanelHeader;
-                        @endphp
-                        <div
-                            class="flex min-h-0 flex-1 flex-col overflow-hidden"
-                            x-show="activeRightPrimarySection === @js($panelKey)"
-                            x-cloak
-                        >
+                    @if ($hasCustomRightSidebarContent)
+                        <div class="flex min-h-0 flex-1 flex-col overflow-hidden" x-cloak>
                             <div class="relative shrink-0 border-b border-slate-200/80 px-5 py-4">
                                 <button
                                     type="button"
@@ -631,22 +617,71 @@
                                     </svg>
                                 </button>
 
-                                <div class="min-w-0 pr-14">
-                                    @if (! empty($panelHeader['eyebrow']))
-                                        <p class="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400">{{ $panelHeader['eyebrow'] }}</p>
-                                    @endif
-                                    @if (! empty($panelHeader['title']))
-                                        <p class="mt-2 truncate text-base font-semibold text-slate-800">{{ $panelHeader['title'] }}</p>
-                                    @endif
-                                    @if (! empty($panelHeader['description']))
-                                        <p class="mt-1 text-sm leading-6 text-slate-500">{{ $panelHeader['description'] }}</p>
-                                    @endif
-                                </div>
+                                @isset($rightSidebarHeader)
+                                    <div class="min-w-0 pr-14">
+                                        {{ $rightSidebarHeader }}
+                                    </div>
+                                @else
+                                    <div class="min-w-0 pr-14">
+                                        @if (! empty($rightPanelHeader['eyebrow']))
+                                            <p class="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400">{{ $rightPanelHeader['eyebrow'] }}</p>
+                                        @endif
+                                        @if (! empty($rightPanelHeader['title']))
+                                            <p class="mt-2 truncate text-base font-semibold text-slate-800">{{ $rightPanelHeader['title'] }}</p>
+                                        @endif
+                                        @if (! empty($rightPanelHeader['description']))
+                                            <p class="mt-1 text-sm leading-6 text-slate-500">{{ $rightPanelHeader['description'] }}</p>
+                                        @endif
+                                    </div>
+                                @endisset
                             </div>
 
-                            <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-                                <div class="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5">
-                                    @foreach ($panel['blocks'] ?? [] as $block)
+                            <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+                                {{ $rightSidebarContent }}
+                            </div>
+                        </div>
+                    @else
+                        @foreach ($rightPanels as $panelKey => $panel)
+                            @php
+                                $panelHeader = $rightPanelHeaders[$panelKey] ?? $rightPanelHeader;
+                            @endphp
+                            <div
+                                class="flex min-h-0 flex-1 flex-col overflow-hidden"
+                                x-show="activeRightPrimarySection === @js($panelKey)"
+                                x-cloak
+                            >
+                                <div class="relative shrink-0 border-b border-slate-200/80 px-5 py-4">
+                                    <button
+                                        type="button"
+                                        class="ws-panel-card ws-hover-soft absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full border text-slate-500 shadow-sm transition hover:text-slate-900"
+                                        @click="
+                                            rightSidebarCollapsed = true;
+                                            rightSidebarVisible = true;
+                                        "
+                                        aria-label="Collapse right sidebar"
+                                        title="Collapse right sidebar"
+                                    >
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+
+                                    <div class="min-w-0 pr-14">
+                                        @if (! empty($panelHeader['eyebrow']))
+                                            <p class="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400">{{ $panelHeader['eyebrow'] }}</p>
+                                        @endif
+                                        @if (! empty($panelHeader['title']))
+                                            <p class="mt-2 truncate text-base font-semibold text-slate-800">{{ $panelHeader['title'] }}</p>
+                                        @endif
+                                        @if (! empty($panelHeader['description']))
+                                            <p class="mt-1 text-sm leading-6 text-slate-500">{{ $panelHeader['description'] }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+                                    <div class="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5">
+                                        @foreach ($panel['blocks'] ?? [] as $block)
                                         @if (($block['type'] ?? null) === 'calendar')
                                             <article class="ws-panel-card rounded-3xl border p-4 shadow-sm">
                                                 <div class="flex items-center justify-between">
@@ -693,7 +728,7 @@
                                                         <div class="ws-soft-card rounded-2xl border px-4 py-4">
                                                             @if (! empty($item['image_src']))
                                                                 <img
-                                                                    src="{{ $item['image_src'] }}"
+                                                                    src="{{ \ChrisKelemba\LaravelUiKit\Support\MediaUrl::resolve($item['image_src']) }}"
                                                                     alt="{{ $item['title'] ?? 'Image' }}"
                                                                     class="mb-3 h-28 w-full rounded-2xl object-cover"
                                                                 >
@@ -705,30 +740,53 @@
                                                 </div>
                                             </article>
                                         @elseif (($block['type'] ?? null) === 'detail')
-                                            <article class="ws-panel-card rounded-3xl border p-5 shadow-sm">
-                                                @if (! empty($block['image_src']))
-                                                    <img
-                                                        src="{{ $block['image_src'] }}"
-                                                        alt="{{ $block['title'] ?? 'Detail image' }}"
-                                                        class="mb-4 h-40 w-full rounded-3xl object-cover"
-                                                    >
-                                                @endif
-                                                <div class="flex items-start justify-between gap-3">
-                                                    <div class="min-w-0">
-                                                        <p class="text-lg font-semibold tracking-tight text-slate-900">{{ $block['title'] }}</p>
-                                                        @if (! empty($block['subtitle']))
-                                                            <p class="mt-1 text-sm text-slate-600">{{ $block['subtitle'] }}</p>
+                                            @php
+                                                $isEmptyDetailState = ($block['empty_state'] ?? false)
+                                                    || (
+                                                        empty($block['image_src'])
+                                                        && empty($block['title'])
+                                                        && empty($block['subtitle'])
+                                                        && empty($block['badge'])
+                                                        && ! empty($block['description'])
+                                                    );
+                                            @endphp
+                                            @if ($isEmptyDetailState)
+                                                <article class="flex min-h-[26rem] items-center justify-center rounded-3xl px-8 py-12 text-center">
+                                                    <div class="max-w-xs">
+                                                        <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-400">
+                                                            <svg class="h-9 w-9" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6v6l4 2m4-2a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/>
+                                                            </svg>
+                                                        </div>
+                                                        <p class="mt-6 text-base font-medium text-slate-500">{{ $block['description'] }}</p>
+                                                    </div>
+                                                </article>
+                                            @else
+                                                <article class="ws-panel-card rounded-3xl border p-5 shadow-sm">
+                                                    @if (! empty($block['image_src']))
+                                                        <img
+                                                            src="{{ \ChrisKelemba\LaravelUiKit\Support\MediaUrl::resolve($block['image_src']) }}"
+                                                            alt="{{ $block['title'] ?? 'Detail image' }}"
+                                                            class="mb-4 h-40 w-full rounded-3xl object-cover"
+                                                        >
+                                                    @endif
+                                                    <div class="flex items-start justify-between gap-3">
+                                                        <div class="min-w-0">
+                                                            <p class="text-lg font-semibold tracking-tight text-slate-900">{{ $block['title'] }}</p>
+                                                            @if (! empty($block['subtitle']))
+                                                                <p class="mt-1 text-sm text-slate-600">{{ $block['subtitle'] }}</p>
+                                                            @endif
+                                                        </div>
+                                                        @if (! empty($block['badge']))
+                                                            <span class="rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $block['badge_class'] ?? 'bg-slate-100 text-slate-700' }}">{{ $block['badge'] }}</span>
                                                         @endif
                                                     </div>
-                                                    @if (! empty($block['badge']))
-                                                        <span class="rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $block['badge_class'] ?? 'bg-slate-100 text-slate-700' }}">{{ $block['badge'] }}</span>
-                                                    @endif
-                                                </div>
 
-                                                @if (! empty($block['description']))
-                                                    <p class="mt-4 text-sm leading-6 text-slate-600">{{ $block['description'] }}</p>
-                                                @endif
-                                            </article>
+                                                    @if (! empty($block['description']))
+                                                        <p class="mt-4 text-sm leading-6 text-slate-600">{{ $block['description'] }}</p>
+                                                    @endif
+                                                </article>
+                                            @endif
                                         @elseif (($block['type'] ?? null) === 'stat-list')
                                             <article class="ws-soft-card rounded-3xl border p-4">
                                                 @if (! empty($block['eyebrow']))
@@ -810,26 +868,27 @@
                                                 </form>
                                             </article>
                                         @endif
-                                    @endforeach
-                                </div>
-
-                                @if (! empty($rightFooterActions))
-                                    <div class="shrink-0 space-y-3 px-5 pb-5 pt-4">
-                                        @foreach ($rightFooterActions as $action)
-                                            <button
-                                                type="button"
-                                                class="{{ ($action['variant'] ?? 'secondary') === 'primary'
-                                                    ? 'ws-primary-action w-full rounded-2xl px-4 py-3 text-sm font-semibold transition'
-                                                    : 'ws-soft-card ws-hover-soft w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-slate-700 transition' }}"
-                                            >
-                                                {{ $action['label'] }}
-                                            </button>
                                         @endforeach
                                     </div>
-                                @endif
+
+                                    @if (! empty($rightFooterActions))
+                                        <div class="shrink-0 space-y-3 px-5 pb-5 pt-4">
+                                            @foreach ($rightFooterActions as $action)
+                                                <button
+                                                    type="button"
+                                                    class="{{ ($action['variant'] ?? 'secondary') === 'primary'
+                                                        ? 'ws-primary-action w-full rounded-2xl px-4 py-3 text-sm font-semibold transition'
+                                                        : 'ws-soft-card ws-hover-soft w-full rounded-2xl border px-4 py-3 text-sm font-semibold text-slate-700 transition' }}"
+                                                >
+                                                    {{ $action['label'] }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    @endif
                 </div>
             </section>
         </x-slot:rightSidebar>
@@ -872,6 +931,34 @@
             {{ $slot }}
         @endif
 
+        @if ($hasRenderableRightSidebar)
+            <div class="fixed z-[90]" style="position: fixed; right: 1.5rem; bottom: 1.5rem;">
+                <button
+                    type="button"
+                    class="ws-card inline-flex h-14 w-14 items-center justify-center rounded-full border bg-white text-slate-700 shadow-2xl ring-1 ring-slate-200/80 transition hover:border-slate-300 hover:bg-white"
+                    @click="
+                        rightSidebarVisible = !rightSidebarVisible;
+                        if (rightSidebarVisible) {
+                            rightSidebarCollapsed = false;
+                            activeRightPrimarySection = activeRightPrimarySection || @js($rightSidebarView);
+                        }
+                    "
+                    :aria-label="rightSidebarVisible && !rightSidebarCollapsed ? 'Hide details panel' : 'Show details panel'"
+                    title="Details"
+                >
+                    <span class="text-2xl font-semibold leading-none">i</span>
+                </button>
+            </div>
+        @endif
+
+        @isset($floating)
+            <div class="pointer-events-none fixed bottom-6 right-6 z-50">
+                <div class="pointer-events-auto">
+                    {{ $floating }}
+                </div>
+            </div>
+        @endisset
+
         @if (! empty($listSection['items']) || ! empty($asideBlocks) || ! empty($listSection['title']))
             <section class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
                 @if (! empty($listSection['title']) || ! empty($listSection['items']))
@@ -901,14 +988,14 @@
                                             window.setTimeout(() => window.location.href = '{{ $item['action_href'] }}', 80);
                                         "
                                     @endif
-                                    class="{{ !empty($item['selected']) ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-300 hover:bg-white' }} block rounded-3xl border px-4 py-4 transition"
-                                    :class="{{ ! empty($item['panel_key']) ? "(activeRightPrimarySection === " . \Illuminate\Support\Js::from($item['panel_key']) . ") ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-300 hover:bg-white'" : "''" }}"
+                                    class="{{ !empty($item['selected']) ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-400 hover:bg-slate-100' }} block cursor-pointer rounded-3xl border px-4 py-4 transition"
+                                    :class="{{ ! empty($item['panel_key']) ? "(activeRightPrimarySection === " . \Illuminate\Support\Js::from($item['panel_key']) . ") ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-400 hover:bg-slate-100'" : "''" }}"
                                 >
                                     <div class="flex items-center justify-between gap-4">
                                         <div class="flex min-w-0 items-center gap-4">
                                             @if (! empty($item['image_src']))
                                                 <img
-                                                    src="{{ $item['image_src'] }}"
+                                                    src="{{ \ChrisKelemba\LaravelUiKit\Support\MediaUrl::resolve($item['image_src']) }}"
                                                     alt="{{ $item['title'] ?? 'Item image' }}"
                                                     class="h-16 w-16 shrink-0 rounded-2xl object-cover"
                                                 >

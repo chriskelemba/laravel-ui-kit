@@ -310,6 +310,83 @@ For apps without named routes, pass direct URLs instead:
 />
 ```
 
+`workspace-shell` also supports two named slots for dynamic page controls:
+
+```blade
+<x-ui-kit::templates.workspace-shell ...>
+    <x-slot:actions>
+        <x-ui-kit::atoms.button variant="secondary">Export</x-ui-kit::atoms.button>
+    </x-slot:actions>
+
+    <x-slot:floating>
+        <x-ui-kit::atoms.button>Add record</x-ui-kit::atoms.button>
+    </x-slot:floating>
+</x-ui-kit::templates.workspace-shell>
+```
+
+Use `actions` for header controls and `floating` for pinned corner UI such as quick-create buttons.
+
+For a consumer-controlled details panel, `workspace-shell` also accepts a custom right sidebar body:
+
+```blade
+<x-ui-kit::templates.workspace-shell
+    :show-right-sidebar="true"
+    right-sidebar-view="details"
+    :right-panel-headers="[
+        'details' => [
+            'title' => 'Details',
+            'description' => 'Select an item to see the details.',
+        ],
+    ]"
+>
+    <x-slot:rightSidebarContent>
+        <div class="space-y-4">
+            <p class="text-sm text-slate-600">Anything can go here.</p>
+        </div>
+    </x-slot:rightSidebarContent>
+</x-ui-kit::templates.workspace-shell>
+```
+
+Use `rightSidebarContent` when the consumer wants to fully own the sidebar body instead of relying on the package block renderer.
+
+For consumers who do not want to build full `primaryRailItems` and `sidebarSections` arrays, UI Kit also includes a simpler workspace wrapper:
+
+```blade
+<x-ui-kit::templates.module-workspace
+    title="Operations"
+    subtitle="manage your module"
+    section="inventory"
+    subnav="pets"
+    page-eyebrow="Workspace"
+    page-heading="Inventory"
+    page-description="Track records from one place."
+    :navigation="[
+        [
+            'key' => 'inventory',
+            'label' => 'Inventory',
+            'href' => route('inventory.index'),
+            'icon' => 'fa-solid fa-box',
+            'items' => [
+                ['key' => 'pets', 'label' => 'Pets', 'href' => route('inventory.index')],
+                ['key' => 'stock', 'label' => 'Stock', 'href' => route('inventory.stock')],
+            ],
+        ],
+    ]"
+    :navigation-badges="[
+        'stock' => 12,
+    ]"
+    :profile-user="auth()->user()"
+>
+    <x-slot:rightSidebarContent>
+        <p class="text-sm text-slate-600">Select an item to see the details.</p>
+    </x-slot:rightSidebarContent>
+
+    {{-- Page content --}}
+</x-ui-kit::templates.module-workspace>
+```
+
+Use `module-workspace` when the consumer wants a simpler entrypoint built around one `navigation` array instead of assembling the lower-level shell structure manually.
+
 ## Auth Pages
 
 UI Kit includes an auth template that gives consumers a flexible shell for login, register, forgot-password, and other auth views without forcing one fixed design.
