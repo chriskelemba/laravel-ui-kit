@@ -77,6 +77,8 @@
     $profileInitials = $profile['initials'];
     $profileEditHref = $profile['edit_href'];
     $profileLogoutHref = $profile['logout_href'];
+    $resolvedActiveSidebarItem = is_string($activeSidebarItem) && $activeSidebarItem !== '' ? $activeSidebarItem : null;
+    $resolvedRightSidebarView = is_string($rightSidebarView) && $rightSidebarView !== '' ? $rightSidebarView : null;
 
     $resolvedActivePrimarySection = $activePrimarySection;
 
@@ -118,12 +120,12 @@
         return $item;
     }, $primaryRailItems);
 
-    $sidebarItems = array_map(function (array $item) use ($activeSidebarItem, $currentRouteName, $currentUrl) {
-        $matchesExplicitKey = ($item['key'] ?? null) === $activeSidebarItem;
+    $sidebarItems = array_map(function (array $item) use ($resolvedActiveSidebarItem, $currentRouteName, $currentUrl) {
+        $matchesExplicitKey = ($item['key'] ?? null) === $resolvedActiveSidebarItem;
         $matchesRouteName = filled($currentRouteName) && (($item['route'] ?? null) === $currentRouteName);
         $matchesHref = filled($item['href'] ?? null) && url($item['href']) === $currentUrl;
 
-        $item['active'] = $matchesExplicitKey || (! filled($activeSidebarItem) && ($matchesRouteName || $matchesHref));
+        $item['active'] = $matchesExplicitKey || (! filled($resolvedActiveSidebarItem) && ($matchesRouteName || $matchesHref));
 
         return $item;
     }, $currentSidebarSection['items'] ?? []);
@@ -135,21 +137,29 @@
         'items' => [],
     ], $listSection);
 
-    $normalizedListItems = array_values(array_map(function (array $item) use ($rightSidebarView) {
-        $item['panel_key'] = $item['panel_key'] ?? $rightSidebarView;
+    $normalizedListItems = array_values(array_map(function (array $item) use ($resolvedRightSidebarView) {
+        $item['panel_key'] = $item['panel_key'] ?? $resolvedRightSidebarView;
 
         return $item;
     }, $listSection['items']));
 
     $listSection['items'] = $normalizedListItems;
 
-    $rightPanelHeader = $rightPanelHeaders[$rightSidebarView] ?? [
+    $rightPanelHeader = filled($resolvedRightSidebarView)
+        ? ($rightPanelHeaders[$resolvedRightSidebarView] ?? null)
+        : null;
+
+    $rightPanelHeader ??= [
         'eyebrow' => null,
         'title' => null,
         'description' => null,
     ];
 
-    $rightPanel = $rightPanels[$rightSidebarView] ?? [
+    $rightPanel = filled($resolvedRightSidebarView)
+        ? ($rightPanels[$resolvedRightSidebarView] ?? null)
+        : null;
+
+    $rightPanel ??= [
         'blocks' => [],
     ];
 
@@ -337,12 +347,12 @@
     :right-sidebar-collapsed="$showRightSidebar ? false : true"
     right-sidebar-collapse-mode="hidden"
     right-sidebar-width="20rem"
-    :active-right-primary-section="$forceRightSidebarOpen ? $rightSidebarView : null"
+    :active-right-primary-section="$forceRightSidebarOpen ? $resolvedRightSidebarView : null"
     x-init="
         activePrimarySection = @js($resolvedActivePrimarySection);
         rightSidebarVisible = @js($showRightSidebar && $forceRightSidebarOpen);
         rightSidebarCollapsed = @js($showRightSidebar && ! $forceRightSidebarOpen);
-        activeRightPrimarySection = @js($forceRightSidebarOpen ? $rightSidebarView : null);
+        activeRightPrimarySection = @js($forceRightSidebarOpen ? $resolvedRightSidebarView : null);
 
         if (window.innerWidth >= 1024) {
             sidebarCollapsed = @js($sidebarCollapsed);
