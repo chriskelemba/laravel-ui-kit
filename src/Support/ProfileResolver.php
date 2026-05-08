@@ -10,7 +10,7 @@ class ProfileResolver
 {
     /**
      * @param  array<string, mixed>  $overrides
-     * @return array{name: string, email: string|null, initials: string, avatar_src: string|null, edit_href: string, logout_href: string}
+     * @return array{name: string, email: string|null, initials: string, avatar_src: string|null, edit_href: string, logout_href: string, menu_items: array<int, array<string, mixed>>}
      */
     public static function resolve(array $overrides = []): array
     {
@@ -31,10 +31,10 @@ class ProfileResolver
             Arr::get($fallback, 'email'),
         ]);
 
-        $avatarSrc = self::firstFilled([
+        $avatarSrc = MediaUrl::resolve(self::firstFilled([
             $overrides['avatar_src'] ?? null,
             self::valueFrom($user, Arr::get($config, 'fields.avatar_src', [])),
-        ]);
+        ]));
 
         return [
             'name' => $name,
@@ -43,6 +43,7 @@ class ProfileResolver
             'avatar_src' => $avatarSrc,
             'edit_href' => self::href($overrides, $config, 'edit', '#'),
             'logout_href' => self::href($overrides, $config, 'logout', '#'),
+            'menu_items' => self::menuItems($overrides, $config),
         ];
     }
 
@@ -117,6 +118,78 @@ class ProfileResolver
         }
 
         return $default;
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @param  array<string, mixed>  $config
+     * @return array<int, array<string, mixed>>
+     */
+    protected static function menuItems(array $overrides, array $config): array
+    {
+        $items = $overrides['menu_items'] ?? Arr::get($config, 'menu_items');
+
+        if (is_array($items) && $items !== []) {
+            return collect($items)
+                ->map(fn (mixed $item) => self::normalizeMenuItem($item))
+                ->filter()
+                ->values()
+                ->all();
+        }
+
+        return array_values(array_filter([
+            self::defaultMenuItem('Edit profile', self::href($overrides, $config, 'edit', '#'), false),
+            self::defaultMenuItem('Logout', self::href($overrides, $config, 'logout', '#'), true),
+        ]));
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    protected static function normalizeMenuItem(mixed $item): ?array
+    {
+        if (! is_array($item)) {
+            return null;
+        }
+
+        $label = self::firstFilled([
+            $item['label'] ?? null,
+            $item['title'] ?? null,
+        ]);
+
+        $href = self::firstFilled([
+            $item['href'] ?? null,
+            $item['url'] ?? null,
+        ]);
+
+        if (! filled($label) || ! filled($href)) {
+            return null;
+        }
+
+        $tone = ($item['tone'] ?? null) === 'danger' || ($item['danger'] ?? false) ? 'danger' : 'default';
+
+        return array_filter([
+            'label' => $label,
+            'href' => $href,
+            'icon' => $item['icon'] ?? null,
+            'tone' => $tone,
+        ], fn (mixed $value) => $value !== null);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    protected static function defaultMenuItem(string $label, string $href, bool $danger = false): ?array
+    {
+        if (! filled($href) || $href === '#') {
+            return null;
+        }
+
+        return [
+            'label' => $label,
+            'href' => $href,
+            'tone' => $danger ? 'danger' : 'default',
+        ];
     }
 
     protected static function initials(?string $name): string

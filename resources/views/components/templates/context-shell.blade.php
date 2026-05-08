@@ -15,17 +15,9 @@
     'navigationBadges' => [],
     'helperRailItems' => [],
     'helperPanels' => [],
-    'theme' => [
-        'primary' => '#2f6a9d',
-        'primary_hover' => '#25577f',
-        'primary_soft' => 'rgba(47, 106, 157, 0.16)',
-        'primary_softer' => 'rgba(47, 106, 157, 0.08)',
-        'primary_contrast' => '#ffffff',
-        'accent' => '#e5232a',
-        'accent_soft' => 'rgba(229, 35, 42, 0.14)',
-        'danger' => '#e5232a',
-        'danger_soft' => 'rgba(229, 35, 42, 0.14)',
-    ],
+    'theme' => [],
+    'leftSidebarTheme' => [],
+    'rightSidebarTheme' => [],
     'activeHelperPanel' => null,
 ])
 
@@ -87,27 +79,17 @@
         'active' => ($item['key'] ?? null) === $activeHelperPanel,
     ]))->values()->all();
 
-    $themeStyle = collect([
-        '--aui-primary' => $theme['primary'] ?? '#2f6a9d',
-        '--aui-primary-hover' => $theme['primary_hover'] ?? '#25577f',
-        '--aui-primary-soft' => $theme['primary_soft'] ?? 'rgba(47, 106, 157, 0.16)',
-        '--aui-primary-softer' => $theme['primary_softer'] ?? 'rgba(47, 106, 157, 0.08)',
-        '--aui-primary-contrast' => $theme['primary_contrast'] ?? '#ffffff',
-        '--aui-accent' => $theme['accent'] ?? '#e5232a',
-        '--aui-accent-soft' => $theme['accent_soft'] ?? 'rgba(229, 35, 42, 0.14)',
-        '--aui-danger' => $theme['danger'] ?? '#e5232a',
-        '--aui-danger-soft' => $theme['danger_soft'] ?? 'rgba(229, 35, 42, 0.14)',
-    ])->map(fn (string $value, string $key) => $key . ': ' . $value)->implode('; ');
 @endphp
 
 @php
     $branding = config('ui-kit.branding', []);
-    $brandLogo = $brandLogo ?? ($branding['logo'] ?? null);
+    $brandLogo = \ChrisKelemba\LaravelUiKit\Support\BrandingResolver::resolveLogo($brandLogo ?? ($branding['logo'] ?? null));
     $brandName = $brandName ?? ($branding['name'] ?? config('app.name'));
     $brandSubtitle = $brandSubtitle ?? ($branding['subtitle'] ?? null);
 @endphp
 
-<div {{ $attributes->class(['aui-context-shell']) }} style="{{ $themeStyle }}">
+<div {{ $attributes->class(['aui-context-shell']) }}>
+    @include('ui-kit::partials.theme-styles', ['theme' => $theme, 'leftSidebarTheme' => $leftSidebarTheme, 'rightSidebarTheme' => $rightSidebarTheme])
     <style>
         .aui-context-shell > div > div > header {
             border-bottom-color: transparent !important;
@@ -191,8 +173,9 @@
         :subtitle="$subtitle"
         sidebar-collapse-mode="hidden"
         :active-primary-section="$section"
+        :right-sidebar-visible="false"
         right-sidebar-collapse-mode="hidden"
-        :active-right-primary-section="$activeHelperPanel"
+        :active-right-primary-section="null"
         :right-sidebar-collapsed="true"
     >
         @if (! empty($primaryRailItems))

@@ -45,22 +45,17 @@
                 .aui-main { padding-left: 2rem; padding-right: 2rem; }
             }
             [x-cloak] { display: none !important; }
-            .aui-page-loader[hidden] { display: none !important; }
         </style>
+        @include('ui-kit::partials.page-loader-styles')
 
         @stack('head')
     </head>
     <body class="min-h-screen">
-        <div id="aui-page-loader" class="aui-page-loader fixed inset-0 z-[120] hidden items-center justify-center bg-slate-950/18 backdrop-blur-[2px]">
-            <div class="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-2xl">
-                <svg class="h-5 w-5 animate-spin text-slate-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"></circle>
-                    <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
-                </svg>
-                <span>Loading...</span>
-            </div>
+        <div class="aui-page-content">
+            @yield('content')
         </div>
-        @yield('content')
+        @include('ui-kit::partials.page-loader')
+        @include('ui-kit::partials.flash-toasts')
 
         @if (config('ui-kit.alpine.enabled'))
             <script
@@ -68,47 +63,7 @@
                 @if (config('ui-kit.alpine.defer', true)) defer @endif
             ></script>
         @endif
-        <script>
-            (() => {
-                const loader = document.getElementById('aui-page-loader');
-                if (!loader) return;
-
-                const showLoader = () => {
-                    loader.classList.remove('hidden');
-                    loader.classList.add('flex');
-                };
-
-                window.addEventListener('aui:page-loading', showLoader);
-
-                document.addEventListener('click', event => {
-                    const link = event.target.closest('a[href]');
-                    if (!link) return;
-
-                    const href = link.getAttribute('href') || '';
-                    const target = link.getAttribute('target');
-                    const isHash = href.startsWith('#');
-                    const isJs = href.toLowerCase().startsWith('javascript:');
-                    const isDownload = link.hasAttribute('download');
-                    const isNewTab = target === '_blank';
-                    const isModified = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
-
-                    if (isHash || isJs || isDownload || isNewTab || isModified) return;
-
-                    showLoader();
-                });
-
-                document.addEventListener('submit', event => {
-                    if (event.target instanceof HTMLFormElement) {
-                        showLoader();
-                    }
-                });
-
-                window.addEventListener('pageshow', () => {
-                    loader.classList.add('hidden');
-                    loader.classList.remove('flex');
-                });
-            })();
-        </script>
+        @include('ui-kit::partials.page-loader-script')
         @stack('scripts')
     </body>
 </html>

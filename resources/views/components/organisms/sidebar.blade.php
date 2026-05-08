@@ -14,27 +14,33 @@
     $variant = $variant === 'panel' ? 'panel' : 'nav';
     $indicatorPositionClass = $side === 'right' ? 'right-2' : 'left-2';
     $collapsedExpr = $side === 'right' ? '!rightSidebarCollapsed || rightSidebarHoverExpanded' : '!sidebarCollapsed || sidebarHoverExpanded';
+    $surfaceClass = $side === 'right' ? 'aui-sidebar-surface-right' : 'aui-sidebar-surface-left';
+    $titleClass = $side === 'right' ? 'aui-sidebar-title-right' : 'aui-sidebar-title-left';
+    $linkClass = $side === 'right' ? 'aui-sidebar-link-right' : 'aui-sidebar-link-left';
+    $iconClass = $side === 'right' ? 'aui-sidebar-icon-right' : 'aui-sidebar-icon-left';
+    $badgeClass = $side === 'right' ? 'aui-sidebar-badge-right' : 'aui-sidebar-badge-left';
+    $indicatorClass = $side === 'right' ? 'aui-sidebar-active-indicator-right' : 'aui-sidebar-active-indicator';
 @endphp
 
 @if ($variant === 'panel')
-    <section {{ $attributes->class(['flex h-full min-h-0 flex-col']) }}>
+    <section {{ $attributes->class(['flex h-full min-h-0 flex-col ' . $surfaceClass]) }}>
         <div x-show="{{ $collapsedExpr }}" x-transition.opacity.duration.150ms class="flex h-full min-h-0 flex-col">
             @if ($eyebrow || $title || $subtitle || isset($actions))
-                <div class="border-b px-5 py-4" :class="theme === 'dark' ? 'border-white/5' : 'border-slate-200/80'">
+                <div class="border-b px-5 py-4" :class="theme === 'dark' ? 'border-white/5' : ''">
                     <div class="flex items-start justify-between gap-4">
                         <div class="min-w-0">
                             @if ($eyebrow)
-                                <p class="text-[11px] font-bold uppercase tracking-[0.3em]" :class="theme === 'dark' ? 'text-slate-500' : 'text-slate-400'">
+                                <p class="text-[11px] font-bold uppercase tracking-[0.3em] {{ $titleClass }}">
                                     {{ $eyebrow }}
                                 </p>
                             @endif
                             @if ($title)
-                                <p class="mt-2 truncate text-base font-semibold" :class="theme === 'dark' ? 'text-slate-100' : 'text-slate-800'">
+                                <p class="mt-2 truncate text-base font-semibold {{ $linkClass }}">
                                     {{ $title }}
                                 </p>
                             @endif
                             @if ($subtitle)
-                                <p class="mt-1 text-sm leading-6" :class="theme === 'dark' ? 'text-slate-400' : 'text-slate-500'">
+                                <p class="mt-1 text-sm leading-6 {{ $titleClass }}">
                                     {{ $subtitle }}
                                 </p>
                             @endif
@@ -54,14 +60,14 @@
             </div>
 
             @isset($footer)
-                <div class="border-t px-5 py-4" :class="theme === 'dark' ? 'border-white/5' : 'border-slate-200/80'">
+                <div class="border-t px-5 py-4" :class="theme === 'dark' ? 'border-white/5' : ''">
                     {{ $footer }}
                 </div>
             @endisset
         </div>
     </section>
 @else
-    <nav {{ $attributes->class(['flex h-full flex-col px-4 py-5']) }}>
+    <nav {{ $attributes->class(['flex h-full flex-col px-4 py-5 ' . $surfaceClass]) }}>
         @isset($brand)
             <div class="mb-5 px-2">
                 <div
@@ -74,9 +80,7 @@
         @else
             @if ($title)
                 <div class="mb-5 px-3" x-show="{{ $collapsedExpr }}" x-transition.opacity.duration.150ms>
-                    <p
-                        class="aui-sidebar-title text-xs font-bold uppercase tracking-widest"
-                    >
+                    <p class="text-xs font-bold uppercase tracking-widest {{ $titleClass }}">
                         {{ $title }}
                     </p>
                 </div>
@@ -96,18 +100,15 @@
                 <li>
                     <a
                         href="{{ $href }}"
-                        class="aui-sidebar-link group relative flex items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium transition{{ $active ? ' is-active aui-sidebar-active' : '' }}"
+                        class="aui-sidebar-link {{ $linkClass }} group relative flex items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium transition{{ $active ? ' is-active aui-sidebar-active' : '' }}"
                         title="{{ $label }}"
                     >
                         @if ($active)
-                            <div class="aui-sidebar-active-indicator absolute {{ $indicatorPositionClass }} h-6 w-1 rounded-full"></div>
+                            <div class="absolute {{ $indicatorPositionClass }} h-6 w-1 rounded-full {{ $indicatorClass }}"></div>
                         @endif
                         
                         <span
-                            class="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full text-[11px] font-semibold"
-                            :class="theme === 'dark'
-                                ? '{{ $icon ? '' : 'bg-white/10 text-slate-200' }}'
-                                : '{{ $icon ? '' : 'bg-slate-100 text-slate-600' }}'"
+                            class="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full text-[11px] font-semibold {{ $icon ? '' : $iconClass }}"
                         >
                             @if ($icon)
                                 {!! $icon !!}
@@ -120,8 +121,7 @@
                         
                         @if ($badge)
                             <span
-                                class="rounded-full px-2 py-0.5 text-[11px] font-medium"
-                                :class="theme === 'dark' ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-500'"
+                                class="rounded-full px-2 py-0.5 text-[11px] font-medium {{ $badgeClass }}"
                                 x-show="{{ $collapsedExpr }}"
                                 x-transition.opacity.duration.150ms
                             >

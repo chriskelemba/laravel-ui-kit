@@ -6,13 +6,14 @@
     'sidebarMode' => 'toggle', // toggle | static
     'sidebarCollapsible' => true,
     'sidebarCollapsed' => false,
+    'sidebarHoverExpandable' => true,
     'sidebarCollapseMode' => 'compact', // compact | hidden
     'sidebarWidth' => '15rem',
     'activePrimarySection' => null,
     'rightSidebarCollapsible' => true,
     'rightSidebarCollapsed' => false,
     'rightSidebarCollapseMode' => 'compact', // compact | hidden
-    'rightSidebarVisible' => true,
+    'rightSidebarVisible' => false,
     'rightSidebarWidth' => '24rem',
     'activeRightPrimarySection' => null,
     'showSidebarToggle' => true,
@@ -20,6 +21,7 @@
 ])
 
 @php
+    $hasSidebar = isset($sidebar);
     $hasRightSidebar = isset($rightSidebar);
     $hasRightPrimaryRail = isset($rightPrimaryRail);
     $rightRailWidth = '5rem';
@@ -38,6 +40,7 @@
         sidebarStatic: @js($sidebarMode === 'static'),
         sidebarOpen: @js($sidebarMode === 'static' ? true : $sidebarOpen),
         sidebarCollapsible: @js($sidebarCollapsible),
+        sidebarHoverExpandable: @js($sidebarHoverExpandable),
         sidebarCollapseMode: @js($sidebarCollapseMode),
         sidebarCollapsed: false,
         sidebarHoverExpanded: false,
@@ -60,11 +63,6 @@
         const storedSidebarOpen = localStorage.getItem('aui-sidebar-open');
         if (!sidebarStatic && storedSidebarOpen !== null) {
             sidebarOpen = JSON.parse(storedSidebarOpen);
-        }
-
-        const storedRightSidebarVisible = localStorage.getItem('aui-right-sidebar-visible');
-        if (storedRightSidebarVisible !== null) {
-            rightSidebarVisible = JSON.parse(storedRightSidebarVisible);
         }
 
         sidebarCollapsed = sidebarCollapsible
@@ -103,17 +101,31 @@
         });
 
         $watch('rightSidebarVisible', value => {
-            localStorage.setItem('aui-right-sidebar-visible', JSON.stringify(value));
+            if (!value) {
+                rightSidebarHoverExpanded = false;
+                rightSidebarCollapsed = true;
+                hoverRightPrimarySection = null;
+                activeRightPrimarySection = null;
+                return;
+            }
+
             if (value && rightSidebarCollapsible && rightSidebarCollapseMode === 'hidden') {
                 rightSidebarCollapsed = false;
             }
         });
 
-        sidebarHoverExpanded = sessionStorage.getItem('aui-sidebar-hover-expanded') === 'true';
+        sidebarHoverExpanded = sidebarHoverExpandable
+            ? sessionStorage.getItem('aui-sidebar-hover-expanded') === 'true'
+            : false;
         rightSidebarHoverExpanded = sessionStorage.getItem('aui-right-sidebar-hover-expanded') === 'true';
 
         $watch('sidebarHoverExpanded', value => {
-            sessionStorage.setItem('aui-sidebar-hover-expanded', value ? 'true' : 'false');
+            const nextValue = sidebarHoverExpandable ? value : false;
+            if (value !== nextValue) {
+                sidebarHoverExpanded = nextValue;
+                return;
+            }
+            sessionStorage.setItem('aui-sidebar-hover-expanded', nextValue ? 'true' : 'false');
         });
 
         $watch('rightSidebarHoverExpanded', value => {
@@ -275,37 +287,37 @@
                 <div
                     x-ref="sidebarRegion"
                     class="flex shrink-0"
-                    @mouseenter="if (window.innerWidth >= 1024 && sidebarCollapsible && sidebarCollapsed) sidebarHoverExpanded = true"
+                    @mouseenter="if (@js($hasSidebar) && window.innerWidth >= 1024 && sidebarHoverExpandable && sidebarCollapsible && sidebarCollapsed) sidebarHoverExpanded = true"
                     @mouseleave="sidebarHoverExpanded = false; hoverPrimarySection = null"
                 >
                     @isset($primaryRail)
                         {{ $primaryRail }}
                     @endisset
 
-                    <aside
-                        x-ref="sidebar"
-                        class="aui-sidebar fixed bottom-0 left-0 z-30 overflow-hidden border-r backdrop-blur-xl transition-[width,transform,opacity] duration-200 lg:sticky"
-                        style="top: var(--aui-header-height); height: calc(100vh - var(--aui-header-height));"
-                        :style="((sidebarOpen || sidebarStatic || (sidebarCollapsed && sidebarHoverExpanded)) && !(sidebarCollapsed && !sidebarHoverExpanded && sidebarCollapseMode === 'hidden'))
-                            ? 'width: {{ $sidebarWidth }};'
-                            : ''"
-                        :class="(sidebarOpen || sidebarStatic || (sidebarCollapsed && sidebarHoverExpanded))
-                            ? 'translate-x-0 opacity-100 pointer-events-auto '
-                                + ((sidebarCollapsed && !sidebarHoverExpanded)
-                                    ? (sidebarCollapseMode === 'hidden'
-                                        ? 'lg:w-0 lg:opacity-100 lg:pointer-events-none lg:border-transparent '
-                                        : 'lg:w-16 ')
-                                    : '')
-                                + (theme === 'dark' ? 'border-white/5 bg-slate-900/95' : 'border-slate-200/80 bg-white/95')
-                            : 'w-60 -translate-x-full opacity-0 pointer-events-none lg:w-0 lg:translate-x-0 lg:opacity-0 lg:pointer-events-none lg:border-transparent '
-                                + (theme === 'dark' ? 'border-white/5 bg-slate-900/95' : 'border-slate-200/80 bg-white/95')"
-                    >
-                        <div class="flex h-full flex-col">
-                            @isset($sidebar)
+                    @if ($hasSidebar)
+                        <aside
+                            x-ref="sidebar"
+                            class="aui-sidebar fixed bottom-0 left-0 z-30 overflow-hidden border-r backdrop-blur-xl transition-[width,transform,opacity] duration-200 lg:sticky"
+                            style="top: var(--aui-header-height); height: calc(100vh - var(--aui-header-height));"
+                            :style="((sidebarOpen || sidebarStatic || (sidebarCollapsed && sidebarHoverExpanded)) && !(sidebarCollapsed && !sidebarHoverExpanded && sidebarCollapseMode === 'hidden'))
+                                ? 'width: {{ $sidebarWidth }};'
+                                : ''"
+                            :class="(sidebarOpen || sidebarStatic || (sidebarCollapsed && sidebarHoverExpanded))
+                                ? 'translate-x-0 opacity-100 pointer-events-auto '
+                                    + ((sidebarCollapsed && !sidebarHoverExpanded)
+                                        ? (sidebarCollapseMode === 'hidden'
+                                            ? 'lg:w-0 lg:opacity-100 lg:pointer-events-none lg:border-transparent '
+                                            : 'lg:w-16 ')
+                                        : '')
+                                    + (theme === 'dark' ? 'border-white/5 bg-slate-900/95' : 'border-slate-200/80 bg-white/95')
+                                : 'w-60 -translate-x-full opacity-0 pointer-events-none lg:w-0 lg:translate-x-0 lg:opacity-0 lg:pointer-events-none lg:border-transparent '
+                                    + (theme === 'dark' ? 'border-white/5 bg-slate-900/95' : 'border-slate-200/80 bg-white/95')"
+                        >
+                            <div class="flex h-full flex-col">
                                 {{ $sidebar }}
-                            @endisset
-                        </div>
-                    </aside>
+                            </div>
+                        </aside>
+                    @endif
                 </div>
 
                 <main class="aui-main min-w-0 flex-1 px-6 py-8 lg:px-8">
@@ -319,7 +331,7 @@
                         x-ref="rightSidebarRegion"
                         class="hidden shrink-0 overflow-hidden transition-[width,opacity] duration-200 lg:flex"
                         @mouseleave="rightSidebarHoverExpanded = false; hoverRightPrimarySection = null"
-                        :style="!rightSidebarVisible
+                        :style="(!rightSidebarVisible || !activeRightPrimarySection)
                             ? 'width: 0px;'
                             : (((rightSidebarCollapsed && !rightSidebarHoverExpanded)
                                 ? (rightSidebarCollapseMode === 'hidden'
@@ -328,7 +340,7 @@
                                 : (({{ $hasRightSidebar ? 'true' : 'false' }} && !{{ $hasRightPrimaryRail ? 'true' : 'false' }})
                                     ? 'width: {{ $rightSidebarWidth }};'
                                     : 'width: {{ $rightExpandedWidthStyle ?? $rightRailWidth }};')))"
-                        :class="!rightSidebarVisible
+                        :class="(!rightSidebarVisible || !activeRightPrimarySection)
                             ? 'opacity-0 pointer-events-none'
                             : (((rightSidebarCollapsed && !rightSidebarHoverExpanded)
                                 ? (rightSidebarCollapseMode === 'hidden'
@@ -340,7 +352,7 @@
                             <aside
                                 x-ref="rightSidebar"
                                 class="aui-sidebar overflow-hidden border-l backdrop-blur-xl transition-[width,opacity] duration-200"
-                                :style="((!rightSidebarCollapsed || rightSidebarHoverExpanded) && {{ $hasRightSidebar ? 'true' : 'false' }})
+                                :style="((!rightSidebarCollapsed || rightSidebarHoverExpanded) && rightSidebarVisible && activeRightPrimarySection && {{ $hasRightSidebar ? 'true' : 'false' }})
                                     ? 'width: {{ $rightSidebarWidth }};'
                                     : ''"
                                 :class="(((rightSidebarCollapsed && !rightSidebarHoverExpanded))

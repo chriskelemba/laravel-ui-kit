@@ -51,6 +51,9 @@ class LaravelUiKitServiceProvider extends ServiceProvider
     {
         Route::get('ui-kit/assets/ui-kit.css', [AssetController::class, 'css'])
             ->name('ui-kit.assets.css');
+
+        Route::get('ui-kit/assets/media', [AssetController::class, 'media'])
+            ->name('ui-kit.assets.media');
     }
 
     /**

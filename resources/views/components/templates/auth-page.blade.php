@@ -95,7 +95,9 @@
 
     $brandName = $brandName ?? ($authBrand['name'] ?? null) ?? ($inheritBrand ? ($branding['name'] ?? config('app.name')) : null);
     $brandSubtitle = $brandSubtitle ?? ($authBrand['subtitle'] ?? null) ?? ($inheritBrand ? ($branding['subtitle'] ?? null) : null);
-    $logoSrc = $logoSrc ?? ($authBrand['logo'] ?? null) ?? ($inheritBrand ? ($branding['logo'] ?? null) : null);
+    $logoSrc = \ChrisKelemba\LaravelUiKit\Support\BrandingResolver::resolveLogo(
+        $logoSrc ?? ($authBrand['logo'] ?? null) ?? ($inheritBrand ? ($branding['logo'] ?? null) : null)
+    );
     $logoHref = $logoHref ?? ($authBrand['href'] ?? null) ?? ($inheritBrand ? ($branding['href'] ?? '/') : null);
     $logoAlt = $logoAlt ?? $brandName ?? config('app.name', 'Brand');
     $theme = $theme ?? [];
@@ -207,21 +209,14 @@
     ];
 
     $themeStyle = collect([
-        '--aui-primary' => $theme['primary'] ?? null,
-        '--aui-primary-hover' => $theme['primary_hover'] ?? null,
-        '--aui-primary-soft' => $theme['primary_soft'] ?? null,
-        '--aui-primary-softer' => $theme['primary_softer'] ?? null,
-        '--aui-primary-contrast' => $theme['primary_contrast'] ?? null,
-        '--aui-accent' => $theme['accent'] ?? null,
-        '--aui-accent-soft' => $theme['accent_soft'] ?? null,
-        '--aui-danger' => $theme['danger'] ?? null,
-        '--aui-danger-soft' => $theme['danger_soft'] ?? null,
         '--aui-auth-card-bg' => $cardBackground,
         '--aui-auth-card-border' => $cardBorderColor,
         '--aui-auth-card-text' => $cardTextColor,
         '--aui-auth-card-muted' => $cardMutedColor,
     ])->filter()->map(fn (string $value, string $key) => $key . ': ' . $value)->implode('; ');
 @endphp
+
+@include('ui-kit::partials.theme-styles', ['theme' => $theme])
 
 <style>
     @media (min-width: 1024px) {

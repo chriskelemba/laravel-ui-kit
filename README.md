@@ -97,6 +97,7 @@ No publishing required. Components, Alpine, and the bundled UI Kit stylesheet ar
 - `ui-kit-crud-page`
 - `ui-kit-resource-index`
 - `ui-kit-context-shell`
+- `ui-kit::templates.module-workspace`
 - `ui-kit-auth-page`
 
 ## Config (optional)
@@ -224,46 +225,93 @@ UI Kit also includes a higher-level shell template for multi-pane layouts where 
 
 You can pass your own navigation arrays, branding, labels, badges, helper rail items, and helper panel blocks to shape the shell for any module in your app.
 
-### Workspace Header Branding
+### Custom Profile Menu Actions
 
-The workspace shell can now show an optional second logo in the center of the header, and an optional dropdown beside the left brand area.
-
-By default:
-
-- left branding is enabled
-- center logo is disabled
-- header dropdown is disabled
-
-You can configure shared branding in `config/ui-kit.php`:
-
-```php
-'branding' => [
-    'logo' => asset('images/logo.svg'),
-    'center_logo' => asset('images/logo-center.svg'),
-    'name' => 'Acme',
-    'subtitle' => 'Workspace portal',
-    'href' => '/',
-],
-```
-
-Then opt in from the shell:
+Consumers can customize the profile dropdown menu in `ui-kit::templates.module-workspace` instead of being limited to the built-in profile and logout links.
 
 ```blade
-<x-ui-kit::templates.workspace-shell
-    title="Travel Desk"
-    :show-header-branding="true"
-    :show-header-center-logo="true"
-    :show-header-dropdown="true"
-    header-dropdown-label="Acme Group"
-    :header-dropdown-items="[
-        ['label' => 'Acme Group', 'href' => '#'],
-        ['label' => 'Acme Kenya', 'href' => '#'],
-        ['label' => 'Acme Uganda', 'href' => '#'],
+<x-ui-kit::templates.module-workspace
+    :profile-user="auth()->user()"
+    :profile-menu-items="[
+        ['label' => 'My account', 'href' => route('account.settings'), 'icon' => 'fa-solid fa-user-gear'],
+        ['label' => 'Team switcher', 'href' => route('teams.index'), 'icon' => 'fa-solid fa-people-group'],
+        ['label' => 'Sign out', 'href' => route('logout'), 'icon' => 'fa-solid fa-right-from-bracket', 'tone' => 'danger'],
     ]"
-/>
+>
+    ...
+</x-ui-kit::templates.module-workspace>
 ```
 
-You can also pass `header-center-logo-src` directly for per-page overrides, or provide a custom `centerBrand` slot if you want the middle header content to be a richer block instead of a plain image.
+Each menu item supports:
+
+- `label`: visible text
+- `href`: destination URL
+- `icon`: optional Font Awesome class
+- `tone`: use `'danger'` for destructive-style actions
+
+If `profileMenuItems` is not provided, the package keeps the current fallback behavior and builds the menu from `profileEditHref` and `profileLogoutHref`.
+
+### Module Workspace
+
+`x-ui-kit::templates.module-workspace` is the first-class Blade entry point for app-style modules like dashboards, inventory screens, and operations workspaces.
+
+The recommended pattern is to shape one page contract in your controller and let the Blade layout render it, instead of querying models or inferring route state inside the view.
+
+```php
+return view('operations.index', [
+    'workspacePage' => [
+        'title' => 'Northwind Ops',
+        'subtitle' => 'operations workspace',
+        'section' => 'inventory',
+        'subnav' => 'catalog',
+        'page_eyebrow' => 'Operations workspace',
+        'page_heading' => 'Inventory and fulfillment',
+        'page_description' => 'Track catalog records, stock movement, and fulfillment tasks from one shared workspace.',
+        'navigation' => $navigation,
+        'navigation_badges' => $navigationBadges,
+        'theme_colors' => [
+            'accent' => '#0f766e',
+            'accent_soft' => '#ccfbf1',
+        ],
+        'brand' => [
+            'initials' => 'NW',
+            'name' => 'Northwind Ops',
+            'tagline' => 'inventory, fulfillment, reporting',
+        ],
+        'profile' => [
+            'user' => auth()->user(),
+            'edit_href' => route('profile.edit'),
+            'logout_href' => route('logout'),
+        ],
+    ],
+    'spotlightCards' => $spotlightCards,
+    'asideBlocks' => $asideBlocks,
+]);
+```
+
+Then render the shell from your layout:
+
+```blade
+<x-ui-kit::templates.module-workspace
+    :title="$workspacePage['title']"
+    :subtitle="$workspacePage['subtitle']"
+    :section="$workspacePage['section']"
+    :subnav="$workspacePage['subnav']"
+    :page-eyebrow="$workspacePage['page_eyebrow']"
+    :page-heading="$workspacePage['page_heading']"
+    :page-description="$workspacePage['page_description']"
+    :navigation="$workspacePage['navigation']"
+    :navigation-badges="$workspacePage['navigation_badges']"
+    :theme-colors="$workspacePage['theme_colors']"
+    :profile-user="$workspacePage['profile']['user']"
+    :profile-edit-href="$workspacePage['profile']['edit_href']"
+    :profile-logout-href="$workspacePage['profile']['logout_href']"
+>
+    {{ $slot }}
+</x-ui-kit::templates.module-workspace>
+```
+
+This keeps the frontend contract explicit, makes pages easier to hand off between backend and frontend teammates, and makes it easier to reuse the same backend data in Vue or another client later.
 
 ### Workspace Profile Menu
 

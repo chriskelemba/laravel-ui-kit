@@ -6,6 +6,10 @@
     'showHeaderBranding' => true,
     'showHeaderDropdown' => false,
     'headerDropdownLabel' => 'Select',
+    'headerDropdownCurrent' => null,
+    'headerDropdownLogoSrc' => null,
+    'headerDropdownLogoAlt' => null,
+    'headerDropdownLogoFallback' => null,
     'headerDropdownItems' => [],
     'headerCenterLogoSrc' => null,
     'headerCenterLogoAlt' => null,
@@ -38,6 +42,7 @@
     'profileEmail' => null,
     'profileAvatarSrc' => null,
     'profileUser' => null,
+    'profileMenuItems' => [],
     'profileEditHref' => null,
     'profileLogoutHref' => null,
     'profileEditRoute' => null,
@@ -65,6 +70,7 @@
         'name' => $profileName,
         'email' => $profileEmail,
         'avatar_src' => $profileAvatarSrc,
+        'menu_items' => $profileMenuItems,
         'edit_href' => $profileEditHref,
         'logout_href' => $profileLogoutHref,
         'edit_route' => $profileEditRoute,
@@ -77,6 +83,7 @@
     $profileInitials = $profile['initials'];
     $profileEditHref = $profile['edit_href'];
     $profileLogoutHref = $profile['logout_href'];
+    $profileMenuItems = $profile['menu_items'];
 
     $resolvedActivePrimarySection = $activePrimarySection;
 
@@ -406,9 +413,26 @@
                             <x-slot:trigger>
                                 <button
                                     type="button"
-                                    class="ws-card inline-flex h-11 min-w-[14rem] items-center justify-between gap-2 rounded-full border px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                                    class="ws-card inline-flex min-h-[3.25rem] min-w-[16rem] items-center justify-between gap-3 rounded-full border px-3 py-2 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
                                 >
-                                    <span>{{ $headerDropdownLabel }}</span>
+                                    <span class="flex min-w-0 items-center gap-3">
+                                        @if ($headerDropdownLogoSrc)
+                                            <img
+                                                src="{{ $headerDropdownLogoSrc }}"
+                                                alt="{{ $headerDropdownLogoAlt ?: ($headerDropdownCurrent ?: $headerDropdownLabel) }}"
+                                                class="h-10 w-10 rounded-full object-cover"
+                                            >
+                                        @else
+                                            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700">
+                                                {{ $headerDropdownLogoFallback ?: 'S' }}
+                                            </span>
+                                        @endif
+
+                                        <span class="min-w-0">
+                                            <span class="block truncate text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{{ $headerDropdownLabel }}</span>
+                                            <span class="block truncate text-sm font-semibold text-slate-900">{{ $headerDropdownCurrent ?: $headerDropdownLabel }}</span>
+                                        </span>
+                                    </span>
                                     <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
                                     </svg>
@@ -496,18 +520,26 @@
                             </div>
 
                             <div class="mt-2 space-y-1 border-t border-slate-200/80 pt-2">
-                                <a href="{{ $profileEditHref }}" class="flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" role="menuitem">
-                                    <span>Edit profile</span>
-                                    <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </a>
-                                <a href="{{ $profileLogoutHref }}" class="flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50" role="menuitem">
-                                    <span>Logout</span>
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12"/>
-                                    </svg>
-                                </a>
+                                @foreach ($profileMenuItems as $item)
+                                    @php
+                                        $isDangerItem = ($item['tone'] ?? 'default') === 'danger';
+                                    @endphp
+                                    <a
+                                        href="{{ $item['href'] }}"
+                                        class="flex items-center justify-between rounded-2xl px-3 py-2.5 text-sm font-semibold transition {{ $isDangerItem ? 'text-rose-600 hover:bg-rose-50' : 'text-slate-700 hover:bg-slate-50' }}"
+                                        role="menuitem"
+                                    >
+                                        <span class="flex items-center gap-3">
+                                            @if (! empty($item['icon']))
+                                                <i class="{{ $item['icon'] }} w-4 text-center {{ $isDangerItem ? 'text-rose-500' : 'text-slate-400' }}" aria-hidden="true"></i>
+                                            @endif
+                                            <span>{{ $item['label'] }}</span>
+                                        </span>
+                                        <svg class="h-4 w-4 {{ $isDangerItem ? 'text-rose-400' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                    </a>
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -572,7 +604,7 @@
                             <p class="px-3 text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">{{ $currentSidebarSection['spaces_title'] }}</p>
                             <div class="space-y-1.5">
                                 @foreach ($currentSidebarSection['spaces'] as $space)
-                                    <a href="#" class="ws-hover-soft flex items-center gap-3 rounded-r-full rounded-l-2xl px-4 py-2 text-sm font-medium text-slate-700 transition">
+                                    <a href="{{ $space['href'] ?? '#' }}" class="ws-hover-soft flex items-center gap-3 rounded-r-full rounded-l-2xl px-4 py-2 text-sm font-medium text-slate-700 transition">
                                         <i class="{{ $space['icon'] }} w-5 text-center text-slate-500" aria-hidden="true"></i>
                                         <span class="flex-1">{{ $space['label'] }}</span>
                                     </a>
@@ -905,15 +937,25 @@
     @endif
 
     <div class="space-y-6">
-        <section class="ws-card rounded-[32px] border p-6 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{{ $pageEyebrow }}</p>
-            <div class="mt-3 flex flex-wrap items-start justify-between gap-4">
-                <div class="max-w-2xl">
-                    <h1 class="text-3xl font-semibold tracking-tight text-slate-900">{{ $pageHeading }}</h1>
-                    <p class="mt-3 text-sm leading-7 text-slate-600">{{ $pageDescription }}</p>
+        @if (filled($pageEyebrow) || filled($pageHeading) || filled($pageDescription))
+            <section class="ws-card rounded-[32px] border p-6 shadow-sm">
+                @if (filled($pageEyebrow))
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{{ $pageEyebrow }}</p>
+                @endif
+
+                <div class="{{ filled($pageEyebrow) ? 'mt-3' : '' }} flex flex-wrap items-start justify-between gap-4">
+                    <div class="max-w-2xl">
+                        @if (filled($pageHeading))
+                            <h1 class="text-3xl font-semibold tracking-tight text-slate-900">{{ $pageHeading }}</h1>
+                        @endif
+
+                        @if (filled($pageDescription))
+                            <p class="{{ filled($pageHeading) ? 'mt-3' : '' }} text-sm leading-7 text-slate-600">{{ $pageDescription }}</p>
+                        @endif
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        @endif
 
         @if ($spotlightCards !== [])
             <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

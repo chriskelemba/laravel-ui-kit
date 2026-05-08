@@ -1,6 +1,13 @@
 @props([
     'title' => null,
     'subtitle' => null,
+    'showHeaderDropdown' => false,
+    'headerDropdownLabel' => 'Select',
+    'headerDropdownCurrent' => null,
+    'headerDropdownLogoSrc' => null,
+    'headerDropdownLogoAlt' => null,
+    'headerDropdownLogoFallback' => null,
+    'headerDropdownItems' => [],
     'section' => null,
     'subnav' => null,
     'pageEyebrow' => null,
@@ -26,6 +33,7 @@
     'profileEmail' => null,
     'profileAvatarSrc' => null,
     'profileUser' => null,
+    'profileMenuItems' => [],
     'profileEditHref' => null,
     'profileLogoutHref' => null,
     'profileEditRoute' => null,
@@ -121,6 +129,13 @@
 <x-ui-kit::templates.workspace-shell
     :title="$title"
     :subtitle="$subtitle"
+    :show-header-dropdown="$showHeaderDropdown"
+    :header-dropdown-label="$headerDropdownLabel"
+    :header-dropdown-current="$headerDropdownCurrent"
+    :header-dropdown-logo-src="$headerDropdownLogoSrc"
+    :header-dropdown-logo-alt="$headerDropdownLogoAlt"
+    :header-dropdown-logo-fallback="$headerDropdownLogoFallback"
+    :header-dropdown-items="$headerDropdownItems"
     :active-primary-section="$resolvedSection"
     :active-sidebar-item="$resolvedSubnav"
     :page-eyebrow="$pageEyebrow"
@@ -146,6 +161,7 @@
     :profile-name="$profileName"
     :profile-email="$profileEmail"
     :profile-avatar-src="$profileAvatarSrc"
+    :profile-menu-items="$profileMenuItems"
     :profile-edit-href="$profileEditHref"
     :profile-logout-href="$profileLogoutHref"
     :profile-edit-route="$profileEditRoute"

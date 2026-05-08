@@ -44,12 +44,10 @@
     <button
         type="{{ $type }}"
         x-data="{ loading: false }"
-        @click="
-            if (@js($showLoader)) {
-                loading = true;
-                $el.disabled = true;
-            }
-            window.dispatchEvent(new CustomEvent('aui:page-loading'));
+        @aui:button-loading.window="
+            if ($event.detail !== $el) return;
+            loading = true;
+            $el.disabled = true;
         "
         {{ $attributes->class([$base, $sizeClass]) }}
         :class="theme === 'dark'
