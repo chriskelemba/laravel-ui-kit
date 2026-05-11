@@ -4,6 +4,7 @@ namespace ChrisKelemba\LaravelUiKit\Providers;
 
 use ChrisKelemba\LaravelUiKit\Http\Controllers\AssetController;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -19,6 +20,8 @@ class LaravelUiKitServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'ui-kit');
         $this->registerAssetRoutes();
+
+        Paginator::defaultView(config('ui-kit.pagination.view', 'ui-kit::pagination'));
 
         $prefix = config('ui-kit.component_prefix', 'ui-kit');
         Blade::anonymousComponentPath(__DIR__ . '/../../resources/views/components', $prefix);

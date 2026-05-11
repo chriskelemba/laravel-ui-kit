@@ -59,6 +59,20 @@ return [
         'default_disk' => 'local',
         'allowed_disks' => ['local'],
     ],
+    'pagination' => [
+        'view' => 'ui-kit::pagination',
+        'colors' => [
+            'text' => '#475569',
+            'muted' => '#94a3b8',
+            'border' => '#e2e8f0',
+            'background' => '#ffffff',
+            'hover_background' => '#f8fafc',
+            'hover_border' => '#cbd5e1',
+            'active_background' => '#0f172a',
+            'active_text' => '#ffffff',
+            'active_border' => '#0f172a',
+        ],
+    ],
     'icons' => [
         'font_awesome' => [
             'enabled' => true,
