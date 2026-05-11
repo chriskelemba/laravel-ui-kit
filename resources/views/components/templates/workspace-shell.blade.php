@@ -558,15 +558,27 @@
                 @if (! empty($currentSidebarSection['compose']))
                     <div class="shrink-0 px-2 pb-3" x-show="!sidebarCollapsed || sidebarHoverExpanded" x-transition.opacity.duration.150ms>
                         <div class="flex items-center gap-2">
-                            <button
-                                type="button"
-                                class="ws-compose flex min-w-0 flex-1 items-center gap-3 rounded-full px-4 py-3 text-left transition"
-                            >
-                                <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-800 shadow-sm">
-                                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                                </span>
-                                <span class="truncate text-base font-semibold tracking-tight">{{ $currentSidebarSection['compose'] }}</span>
-                            </button>
+                            @if (! empty($currentSidebarSection['compose_href']))
+                                <a
+                                    href="{{ $currentSidebarSection['compose_href'] }}"
+                                    class="ws-compose flex min-w-0 flex-1 items-center gap-3 rounded-full px-4 py-3 text-left transition"
+                                >
+                                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-800 shadow-sm">
+                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                    </span>
+                                    <span class="truncate text-base font-semibold tracking-tight">{{ $currentSidebarSection['compose'] }}</span>
+                                </a>
+                            @else
+                                <button
+                                    type="button"
+                                    class="ws-compose flex min-w-0 flex-1 items-center gap-3 rounded-full px-4 py-3 text-left transition"
+                                >
+                                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-800 shadow-sm">
+                                        <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                    </span>
+                                    <span class="truncate text-base font-semibold tracking-tight">{{ $currentSidebarSection['compose'] }}</span>
+                                </button>
+                            @endif
                         </div>
                     </div>
                 @endif
