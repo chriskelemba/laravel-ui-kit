@@ -985,26 +985,6 @@
             {{ $slot }}
         @endif
 
-        @if ($hasRenderableRightSidebar)
-            <div class="fixed z-[90]" style="position: fixed; right: 1.5rem; bottom: 1.5rem;">
-                <button
-                    type="button"
-                    class="ws-card inline-flex h-14 w-14 items-center justify-center rounded-full border bg-white text-slate-700 shadow-2xl ring-1 ring-slate-200/80 transition hover:border-slate-300 hover:bg-white"
-                    @click="
-                        rightSidebarVisible = !rightSidebarVisible;
-                        if (rightSidebarVisible) {
-                            rightSidebarCollapsed = false;
-                            activeRightPrimarySection = activeRightPrimarySection || @js($rightSidebarView);
-                        }
-                    "
-                    :aria-label="rightSidebarVisible && !rightSidebarCollapsed ? 'Hide details panel' : 'Show details panel'"
-                    title="Details"
-                >
-                    <span class="text-2xl font-semibold leading-none">i</span>
-                </button>
-            </div>
-        @endif
-
         @isset($floating)
             <div class="pointer-events-none fixed bottom-6 right-6 z-50">
                 <div class="pointer-events-auto">
