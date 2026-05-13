@@ -17,14 +17,17 @@
         : $attributes->except('class');
 @endphp
 
-<div {{ $wrapperAttributes->class(['space-y-1']) }}>
+<div {{ $wrapperAttributes->class(['aui-form-field space-y-2']) }}>
     @if ($label)
         <label
             for="{{ $name }}"
-            class="text-sm font-medium"
-            :class="theme === 'dark' ? 'text-slate-200' : 'text-slate-700'"
+            class="aui-form-label text-sm font-semibold tracking-[0.01em]"
+            :class="theme === 'dark' ? 'text-slate-100' : 'text-slate-800'"
         >
             {{ $label }}
+            @if ($isRequired)
+                <span class="ml-1 aui-primary-text">*</span>
+            @endif
         </label>
     @endif
 
@@ -42,6 +45,6 @@
     @endif
 
     @if ($hint)
-        <p class="text-xs" :class="theme === 'dark' ? 'text-slate-400' : 'text-slate-500'">{{ $hint }}</p>
+        <p class="text-xs leading-5" :class="theme === 'dark' ? 'text-slate-400' : 'text-slate-500'">{{ $hint }}</p>
     @endif
 </div>

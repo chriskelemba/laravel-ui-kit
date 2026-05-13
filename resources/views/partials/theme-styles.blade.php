@@ -327,4 +327,36 @@
     .aui-focus:focus-visible {
         --tw-ring-color: var(--aui-primary-soft);
     }
+
+    .aui-form-input {
+        border-color: color-mix(in srgb, var(--aui-primary) 10%, rgba(148, 163, 184, 0.45));
+        box-shadow:
+            0 1px 2px rgba(15, 23, 42, 0.04),
+            0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+    }
+
+    .aui-form-input:hover {
+        border-color: color-mix(in srgb, var(--aui-primary) 24%, rgba(148, 163, 184, 0.65));
+    }
+
+    .aui-form-input::placeholder {
+        color: color-mix(in srgb, currentColor 42%, transparent);
+    }
+
+    .aui-form-select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M6 8l4 4 4-4' stroke='%2364758b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-position: right 1rem center;
+        background-repeat: no-repeat;
+        background-size: 1rem;
+    }
+
+    .aui-form-field {
+        position: relative;
+    }
+
+    .aui-form-upload {
+        box-shadow:
+            0 16px 32px -26px rgba(15, 23, 42, 0.25),
+            0 0 0 1px rgba(255, 255, 255, 0.22) inset;
+    }
 </style>

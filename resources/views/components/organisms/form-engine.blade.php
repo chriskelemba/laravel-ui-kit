@@ -7,6 +7,11 @@
     'values' => [],
 ])
 
+{{-- Field schema keys:
+    type, name, label, value, placeholder, required, readonly, disabled,
+    help_text, options, id, wrapper_class.
+--}}
+
 @php
     $columnClass = match ((int) $columns) {
         1 => 'grid-cols-1',
@@ -73,6 +78,8 @@
                         $label = $field['label'] ?? null;
                         $placeholder = $field['placeholder'] ?? null;
                         $required = (bool) ($field['required'] ?? false);
+                        $readonly = (bool) ($field['readonly'] ?? false);
+                        $disabled = (bool) ($field['disabled'] ?? false);
                         $helpText = $field['help_text'] ?? null;
                         $options = $field['options'] ?? [];
                         $value = $values[$name] ?? ($field['value'] ?? null);
@@ -98,6 +105,7 @@
                                 :options="$options"
                                 :placeholder="$placeholder"
                                 :required="$required"
+                                :disabled="$disabled"
                                 data-aui-field
                                 class="{{ $error ? 'aui-field-invalid' : '' }}"
                             />
@@ -107,6 +115,8 @@
                                 :name="$name"
                                 :placeholder="$placeholder"
                                 :required="$required"
+                                :readonly="$readonly"
+                                :disabled="$disabled"
                                 data-aui-field
                                 class="{{ $error ? 'aui-field-invalid' : '' }}"
                             >{{ $value }}</x-ui-kit::molecules.textarea>
@@ -118,6 +128,8 @@
                                 :value="$value"
                                 :placeholder="$placeholder"
                                 :required="$required"
+                                :readonly="$readonly"
+                                :disabled="$disabled"
                                 data-aui-field
                                 class="{{ $error ? 'aui-field-invalid' : '' }}"
                             />

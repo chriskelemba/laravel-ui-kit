@@ -4,17 +4,17 @@
     'submitLabel' => 'Save',
 ])
 
-<form method="{{ in_array(strtoupper($method), ['GET', 'POST']) ? $method : 'POST' }}" action="{{ $action }}" novalidate data-aui-form {{ $attributes->class(['space-y-4']) }}>
+<form method="{{ in_array(strtoupper($method), ['GET', 'POST']) ? $method : 'POST' }}" action="{{ $action }}" novalidate data-aui-form {{ $attributes->class(['space-y-6']) }}>
     @csrf
     @if (!in_array(strtoupper($method), ['GET', 'POST']))
         @method($method)
     @endif
 
-    <div class="space-y-4">
+    <div class="space-y-6">
         {{ $slot }}
     </div>
 
-    <div class="flex items-center justify-end gap-2">
+    <div class="flex flex-wrap items-center justify-end gap-3 border-t border-slate-200/80 pt-4 dark:border-white/10">
         @isset($actions)
             {{ $actions }}
         @endisset
