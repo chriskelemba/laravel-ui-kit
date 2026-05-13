@@ -2,6 +2,13 @@
     'title' => null,
     'open' => false,
     'size' => 'md',
+    'width' => null,
+    'height' => null,
+    'maxHeight' => '90vh',
+    'closeOnEscape' => true,
+    'closeOnBackdrop' => true,
+    'showClose' => true,
+    'id' => 'modal-' . \Illuminate\Support\Str::uuid(),
 ])
 
 @php
@@ -9,11 +16,24 @@
         'sm' => 'max-w-sm',
         'md' => 'max-w-lg',
         'lg' => 'max-w-2xl',
+        'xl' => 'max-w-4xl',
+        'full' => 'max-w-[96vw]',
     ];
-    $panelClass = $sizes[$size] ?? $sizes['md'];
+    $panelClass = $width ? '' : ($sizes[$size] ?? $sizes['md']);
+    $titleId = $id . '-title';
+    $descriptionId = $id . '-description';
+    $panelStyle = collect([
+        $width ? 'width: ' . $width : null,
+        $height ? 'height: ' . $height : null,
+        $maxHeight ? 'max-height: ' . $maxHeight : null,
+    ])->filter()->implode('; ');
 @endphp
 
-<div x-data="{ open: @js($open) }" {{ $attributes->class(['relative']) }}>
+<div
+    x-data="{ open: @js($open) }"
+    x-on:keydown.escape.window="@js($closeOnEscape) ? (open = false) : null"
+    {{ $attributes->class(['relative']) }}
+>
     @isset($trigger)
         <span @click="open = true">
             {{ $trigger }}
@@ -24,31 +44,57 @@
         <div
             x-cloak
             x-show="open"
-            class="fixed inset-0 z-40 flex items-center justify-center p-4"
-            style="position: fixed; inset: 0; z-index: 40;"
+            x-transition.opacity
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            role="presentation"
+            aria-hidden="true"
             :class="theme === 'dark' ? 'bg-slate-950/70' : 'bg-slate-900/50'"
+            @if($closeOnBackdrop)
+                @click="open = false"
+            @endif
         >
             <div
                 x-show="open"
-                x-transition
-                @click.away="open = false"
-                class="w-full {{ $panelClass }} rounded-xl p-6 shadow-xl"
+                x-transition.scale.95
+                class="w-full {{ $panelClass }} overflow-y-auto rounded-2xl p-6 shadow-2xl"
+                style="{{ $panelStyle }}"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="{{ $title ? $titleId : '' }}"
+                aria-describedby="{{ $descriptionId }}"
+                tabindex="-1"
+                @click.stop
                 :class="theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'"
             >
                 <div class="flex items-start justify-between gap-4">
-                    <div>
+                    <div class="min-w-0">
                         @if ($title)
-                            <h2 class="text-lg font-semibold" :class="theme === 'dark' ? 'text-slate-100' : 'text-slate-900'">{{ $title }}</h2>
+                            <h2 id="{{ $titleId }}" class="text-lg font-semibold" :class="theme === 'dark' ? 'text-slate-100' : 'text-slate-900'">{{ $title }}</h2>
                         @endif
+                        @isset($subtitle)
+                            <p class="mt-1 text-sm" :class="theme === 'dark' ? 'text-slate-300' : 'text-slate-600'">{{ $subtitle }}</p>
+                        @endisset
                     </div>
-                    <x-ui-kit::atoms.button variant="ghost" @click="open = false">
-                        Close
-                    </x-ui-kit::atoms.button>
+                    @if($showClose)
+                        <x-ui-kit::atoms.button variant="ghost" @click="open = false" aria-label="Close modal">
+                            Close
+                        </x-ui-kit::atoms.button>
+                    @endif
                 </div>
 
-                <div class="mt-4">
-                    {{ $slot }}
+                <div id="{{ $descriptionId }}" class="mt-4">
+                    @isset($body)
+                        {{ $body }}
+                    @else
+                        {{ $slot }}
+                    @endisset
                 </div>
+
+                @isset($footer)
+                    <div class="mt-6 flex items-center justify-end gap-3 border-t pt-4" :class="theme === 'dark' ? 'border-slate-700' : 'border-slate-200'">
+                        {{ $footer }}
+                    </div>
+                @endisset
             </div>
         </div>
     </template>
