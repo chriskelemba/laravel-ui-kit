@@ -11,6 +11,16 @@
 ])
 
 @php
+    $resolveIcon = function ($icon, ?string $label = null): ?string {
+        if ($icon instanceof \Illuminate\Contracts\Support\Htmlable) {
+            return $icon->toHtml();
+        }
+
+        return \ChrisKelemba\LaravelUiKit\Support\IconResolver::resolve(
+            is_string($icon) ? $icon : null,
+            $label,
+        );
+    };
     $hasSlot = trim($slot) !== '';
     $tableStyle = filled($minWidth)
         ? 'min-width: min(100%, ' . $minWidth . ');'
@@ -57,7 +67,7 @@
     };
 
     $normalizedRows = $usesStructuredRows
-        ? collect($rows)->map(function ($row) use ($renderCell, $renderInlineValue) {
+        ? collect($rows)->map(function ($row) use ($renderCell, $renderInlineValue, $resolveIcon) {
             $cells = is_array($row) && array_key_exists('cells', $row) ? ($row['cells'] ?? []) : $row;
             $actions = is_array($row) ? ($row['actions'] ?? []) : [];
 
@@ -77,17 +87,22 @@
                         'class' => $cellData['class'] ?? null,
                     ];
                 })->values()->all(),
-                'actions' => collect($actions)->map(fn ($action) => [
-                    'as' => $action['as'] ?? (isset($action['href']) ? 'a' : 'button'),
-                    'href' => $action['href'] ?? null,
-                    'type' => $action['type'] ?? 'button',
-                    'variant' => $action['variant'] ?? 'ghost',
-                    'label' => $action['label'] ?? null,
-                    'slot' => $renderInlineValue($action['slot'] ?? ''),
-                    'icon' => isset($action['icon']) ? $renderInlineValue($action['icon']) : null,
-                    'tooltip' => $action['tooltip'] ?? (isset($action['icon']) ? ($action['label'] ?? null) : null),
-                    'iconOnly' => (bool) ($action['icon_only'] ?? false),
-                ])->values()->all(),
+                'actions' => collect($actions)->map(function ($action) use ($renderInlineValue, $resolveIcon) {
+                    $label = $action['label'] ?? null;
+                    $resolvedIcon = $resolveIcon($action['icon'] ?? null, $label);
+
+                    return [
+                        'as' => $action['as'] ?? (isset($action['href']) ? 'a' : 'button'),
+                        'href' => $action['href'] ?? null,
+                        'type' => $action['type'] ?? 'button',
+                        'variant' => $action['variant'] ?? 'ghost',
+                        'label' => $label,
+                        'slot' => $renderInlineValue($action['slot'] ?? ''),
+                        'icon' => $resolvedIcon,
+                        'tooltip' => $action['tooltip'] ?? ($resolvedIcon ? ($label ?? null) : null),
+                        'iconOnly' => (bool) ($action['icon_only'] ?? false),
+                    ];
+                })->values()->all(),
             ];
         })->values()
         : collect();
@@ -412,14 +427,18 @@
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <div class="flex items-center justify-center gap-2 whitespace-nowrap">
                                         @foreach ($rowActions as $action)
+                                            @php
+                                                $actionLabel = $action['label'] ?? null;
+                                                $actionIcon = $resolveIcon($action['icon'] ?? null, $actionLabel);
+                                            @endphp
                                             <x-ui-kit::atoms.action-button
                                                 :as="$action['as'] ?? (isset($action['href']) ? 'a' : 'button')"
                                                 :href="$action['href'] ?? null"
                                                 :type="$action['type'] ?? 'button'"
                                                 :variant="$action['variant'] ?? 'ghost'"
-                                                :label="$action['label'] ?? null"
-                                                :icon="$action['icon'] ?? null"
-                                                :tooltip="$action['tooltip'] ?? (isset($action['icon']) ? ($action['label'] ?? null) : null)"
+                                                :label="$actionLabel"
+                                                :icon="$actionIcon"
+                                                :tooltip="$action['tooltip'] ?? ($actionIcon ? ($actionLabel ?? null) : null)"
                                                 :icon-only="(bool) ($action['icon_only'] ?? false)"
                                             >
                                                 {{ $action['slot'] ?? '' }}
