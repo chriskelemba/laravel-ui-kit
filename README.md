@@ -97,6 +97,7 @@ No publishing required. Components, Alpine, and the bundled UI Kit stylesheet ar
 - `ui-kit-crud-page`
 - `ui-kit-resource-index`
 - `ui-kit-context-shell`
+- `ui-kit::templates.workspace-shell`
 - `ui-kit::templates.module-workspace`
 - `ui-kit-auth-page`
 
@@ -142,6 +143,16 @@ If you use your own app layout, add this once inside `<head>`:
 ```
 
 Then package components like `primary` buttons, active steps, charts, progress bars, sidebars, and focus states will use your project colors automatically.
+
+For dynamic module or tenant theming, you can also generate a workspace palette from a single hex color:
+
+```php
+use ChrisKelemba\LaravelUiKit\Support\ThemePalette;
+
+$themeColors = ThemePalette::fromColor('#0EA5E9');
+```
+
+Pass the result into `theme-colors` on `ui-kit::templates.workspace-shell` or `ui-kit::templates.module-workspace`.
 
 ## Icon Aliases
 
