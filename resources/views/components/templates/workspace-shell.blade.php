@@ -50,11 +50,6 @@
 ])
 
 @php
-    $workspaceShellStyle = trim(implode('; ', array_filter([
-        $themeStyle,
-        $attributes->get('style'),
-    ])), " \t\n\r\0\x0B;");
-
     $currentRouteName = request()->route()?->getName();
     $currentUrl = url()->current();
 
@@ -332,10 +327,8 @@
 @endpush
 
     <x-ui-kit::templates.app-shell
-    {{ $attributes->except('style')->class(['workspace-shell']) }}
-    @if ($workspaceShellStyle !== '')
-        style="{{ $workspaceShellStyle }}"
-    @endif
+    class="workspace-shell"
+    style="{{ $themeStyle }}"
     :title="$title"
     :subtitle="$subtitle"
     :show-sidebar="true"
