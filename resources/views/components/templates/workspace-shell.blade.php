@@ -1016,31 +1016,21 @@
 
                         <div class="mt-6 space-y-3">
                             @foreach ($listSection['items'] as $item)
-                                @php
-                                    $listItemBaseClass = ! empty($item['selected'])
-                                        ? 'ws-list-selected shadow-sm'
-                                        : 'ws-soft-card hover:border-slate-400 hover:bg-slate-100';
-                                    $listItemPanelKey = $item['panel_key'] ?? null;
-                                    $listItemActionHref = $item['action_href'] ?? null;
-                                    $listItemAlpineClass = $listItemPanelKey
-                                        ? "(activeRightPrimarySection === " . \Illuminate\Support\Js::from($listItemPanelKey) . ") ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-400 hover:bg-slate-100'"
-                                        : null;
-                                @endphp
                                 <a
                                     href="{{ $item['href'] }}"
-                                    @if ($listItemPanelKey)
+                                    @if (! empty($item['panel_key']))
                                         @click.prevent="
-                                            activeRightPrimarySection = @js($listItemPanelKey);
+                                            activeRightPrimarySection = @js($item['panel_key']);
                                             rightSidebarVisible = true;
                                             rightSidebarCollapsed = false;
                                         "
-                                    @elseif ($listItemActionHref)
-                                        @click.prevent="window.setTimeout(() => window.location.href = '{{ $listItemActionHref }}', 80);"
+                                    @elseif (! empty($item['action_href']))
+                                        @click.prevent="
+                                            window.setTimeout(() => window.location.href = '{{ $item['action_href'] }}', 80);
+                                        "
                                     @endif
-                                    class="{{ $listItemBaseClass }} block cursor-pointer rounded-3xl border px-4 py-4 transition"
-                                    @if ($listItemAlpineClass)
-                                        :class="{{ $listItemAlpineClass }}"
-                                    @endif
+                                    class="{{ !empty($item['selected']) ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-400 hover:bg-slate-100' }} block cursor-pointer rounded-3xl border px-4 py-4 transition"
+                                    :class="{{ ! empty($item['panel_key']) ? "(activeRightPrimarySection === " . \Illuminate\Support\Js::from($item['panel_key']) . ") ? 'ws-list-selected shadow-sm' : 'ws-soft-card hover:border-slate-400 hover:bg-slate-100'" : "''" }}"
                                 >
                                     <div class="flex items-center justify-between gap-4">
                                         <div class="flex min-w-0 items-center gap-4">
